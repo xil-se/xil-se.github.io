@@ -30,4 +30,5 @@ jobs:
           publish_dir: ./public
           publish_branch: master
           cname: blog.xil.se
+          force_orphan: true
 
