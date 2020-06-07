@@ -1,0 +1,162 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/><link rel=next href=https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Pwn2Win 2016 QRGrams Writeup | Blog</title><meta name=title content="Pwn2Win 2016 QRGrams Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Pwn2Win 2016 QRGrams Writeup","headline":"Pwn2Win 2016 QRGrams Writeup","description":"Problem N\/A. Something about QR and anagrams.\nSolution Connect to a server and get a bunch of ascii and ansi QR codes, then are supposed to reply with a text and some numbers.\nI solved it using qrtools, png and an anagram solver I found using Google. The anagram solver needs a dictionary to work, so I had to find a sorted word list by frequency (N-gram, the hint in the challenge name).","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-03-28 00:52:12 \u002b0200 \u002b0200","dateModified":"2016-03-28 00:52:12 \u002b0200 \u002b0200","url":"https:\/\/blog.xil.se\/posts\/pwn2win-2016-qrgrams-kbeckmann\/","wordCount":"538","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Pwn2Win 2016 QRGrams Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-03-28 itemprop=datePublished>March 28, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><p>N/A. Something about QR and anagrams.</p><h1 id=solution>Solution</h1><p>Connect to a server and get a bunch of ascii and ansi QR codes, then are supposed to reply with a text and some numbers.</p><p>I solved it using <code>qrtools</code>, <code>png</code> and an <a href=http://code.runnable.com/UqAsOF0vlLULAAAK/anagram-solver-for-python>anagram solver</a> I found using Google. The anagram solver needs a dictionary to work, so I had to find a <a href=https://github.com/first20hours/google-10000-english/blob/master/google-10000-english-usa.txt>sorted word list by frequency</a> (N-gram, the hint in the challenge name).</p><p>I generate a png image with the qrcode and then feed it to qrtools to decode a string. This string is an anagram that I then solve with the anagram solver previously mentioned.</p><p>Sorry about the mess but here&rsquo;s the code.</p><p>Change to the anaram solver:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>process</span>(words, word):
+	jumbledWord <span style=color:#f92672>=</span> word
+	filteredWords <span style=color:#f92672>=</span> [filterWordsBasedOnLength(jumbledWord,word) <span style=color:#66d9ef>for</span> word <span style=color:#f92672>in</span> words]
+	filteredWords <span style=color:#f92672>=</span> filter(None,filteredWords)
+        <span style=color:#66d9ef>for</span> dictionaryWord <span style=color:#f92672>in</span> filteredWords:
+            <span style=color:#66d9ef>if</span> computeValuForEachWord(dictionaryWord,jumbledWord):
+                <span style=color:#66d9ef>print</span> dictionaryWord
+                <span style=color:#66d9ef>return</span> dictionaryWord
+</code></pre></div><p>Solution</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+<span style=color:#f92672>import</span> qrtools
+<span style=color:#f92672>import</span> png
+<span style=color:#f92672>import</span> ana
+<span style=color:#75715e>#context.log_level = 0</span>
+
+r <span style=color:#f92672>=</span> remote(<span style=color:#e6db74>&#39;pool.pwn2win.party&#39;</span>, <span style=color:#ae81ff>31337</span>)
+
+<span style=color:#66d9ef>global</span> g_i
+g_i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>decodeascii</span>(data, fname):
+    width <span style=color:#f92672>=</span> len(data[<span style=color:#ae81ff>0</span>]) <span style=color:#f92672>*</span> <span style=color:#ae81ff>5</span>
+    height <span style=color:#f92672>=</span> len(data) <span style=color:#f92672>*</span> <span style=color:#ae81ff>5</span>
+    f <span style=color:#f92672>=</span> open(fname, <span style=color:#e6db74>&#39;wb&#39;</span>)
+    w <span style=color:#f92672>=</span> png<span style=color:#f92672>.</span>Writer(width, height, greyscale<span style=color:#f92672>=</span>True)
+    rows <span style=color:#f92672>=</span> []
+    <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(len(data)):
+        row <span style=color:#f92672>=</span> []
+        <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> data[i]:
+            col <span style=color:#f92672>=</span> <span style=color:#ae81ff>255</span> <span style=color:#66d9ef>if</span> x <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;0&#39;</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>
+            row <span style=color:#f92672>+=</span> [col]<span style=color:#f92672>*</span><span style=color:#ae81ff>5</span>
+        rows <span style=color:#f92672>+=</span> [row] <span style=color:#f92672>*</span> <span style=color:#ae81ff>5</span>
+    w<span style=color:#f92672>.</span>write(f, rows)
+    f<span style=color:#f92672>.</span>close()
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>decode</span>(data):
+    <span style=color:#66d9ef>global</span> g_i
+    g_i <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+    fname <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;qr-</span><span style=color:#e6db74>%d</span><span style=color:#e6db74>.png&#39;</span> <span style=color:#f92672>%</span> g_i
+    data <span style=color:#f92672>=</span> data<span style=color:#f92672>.</span>split(<span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span>)
+    <span style=color:#66d9ef>if</span> data[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;0&#39;</span> <span style=color:#f92672>or</span> data[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;1&#39;</span>:
+        <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;ASCII&#34;</span>
+        decodeascii(data, fname)
+
+    <span style=color:#66d9ef>else</span>:
+        <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;ANSI&#34;</span>
+        newdata <span style=color:#f92672>=</span> []
+        <span style=color:#75715e># Mmmm, ctf code is beautiful.</span>
+        <span style=color:#66d9ef>for</span> line <span style=color:#f92672>in</span> data:
+            line <span style=color:#f92672>=</span> line<span style=color:#f92672>.</span>replace(unhex(<span style=color:#e6db74>&#39;1b5b376d20201b5b306d&#39;</span>), <span style=color:#e6db74>&#39;O&#39;</span>)
+            line <span style=color:#f92672>=</span> line<span style=color:#f92672>.</span>replace(unhex(<span style=color:#e6db74>&#39;1b5b34396d20201b5b306d&#39;</span>), <span style=color:#e6db74>&#39;I&#39;</span>)
+            line <span style=color:#f92672>=</span> line<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#39;O&#39;</span>, <span style=color:#e6db74>&#39;0&#39;</span>)
+            line <span style=color:#f92672>=</span> line<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#39;I&#39;</span>, <span style=color:#e6db74>&#39;1&#39;</span>)
+            newdata<span style=color:#f92672>.</span>append(line)
+            <span style=color:#75715e>#print &#34;[%s]&#34; % line</span>
+        decodeascii(newdata, fname)
+
+    x <span style=color:#f92672>=</span> qrtools<span style=color:#f92672>.</span>QR(filename<span style=color:#f92672>=</span>fname)
+    x<span style=color:#f92672>.</span>decode()
+    <span style=color:#66d9ef>print</span> x<span style=color:#f92672>.</span>data
+    <span style=color:#66d9ef>return</span> x<span style=color:#f92672>.</span>data
+
+
+words <span style=color:#f92672>=</span> [x<span style=color:#f92672>.</span>strip() <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> open(<span style=color:#e6db74>&#34;google-10000-english-usa.txt&#34;</span>, <span style=color:#e6db74>&#34;r&#34;</span>)<span style=color:#f92672>.</span>read()<span style=color:#f92672>.</span>split()]
+words <span style=color:#f92672>+=</span> [x<span style=color:#f92672>.</span>strip() <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> open(<span style=color:#e6db74>&#34;wordsEn.txt&#34;</span>, <span style=color:#e6db74>&#34;r&#34;</span>)<span style=color:#f92672>.</span>read()<span style=color:#f92672>.</span>split()]
+
+
+postfix <span style=color:#f92672>=</span> []
+answers <span style=color:#f92672>=</span> []
+part <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>
+r<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span>)
+hax <span style=color:#f92672>=</span> True
+<span style=color:#66d9ef>while</span> hax:
+    ret <span style=color:#f92672>=</span> r<span style=color:#f92672>.</span>recv()
+    <span style=color:#66d9ef>if</span> ret<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;Phrase&#39;</span>) <span style=color:#f92672>&gt;</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>:
+        <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;Phrase!&#34;</span>
+        hax <span style=color:#f92672>=</span> False
+    part <span style=color:#f92672>+=</span> ret
+    <span style=color:#75715e>#print part</span>
+    nn <span style=color:#f92672>=</span> part<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\n\n</span><span style=color:#e6db74>&#39;</span>)
+    <span style=color:#66d9ef>if</span> nn <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        x <span style=color:#f92672>=</span> part[:nn]<span style=color:#f92672>.</span>strip()
+        part <span style=color:#f92672>=</span> part[nn<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>:]
+    <span style=color:#66d9ef>elif</span> <span style=color:#f92672>not</span> hax:
+        nn <span style=color:#f92672>=</span> part<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;Phrase&#39;</span>)
+        x <span style=color:#f92672>=</span> part[:nn]<span style=color:#f92672>.</span>strip()
+    <span style=color:#66d9ef>else</span>:
+        <span style=color:#66d9ef>continue</span>
+
+    append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>
+    <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;qr: [</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>]&#34;</span> <span style=color:#f92672>%</span> x
+    <span style=color:#66d9ef>if</span> x <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;&#39;</span>: <span style=color:#66d9ef>continue</span>
+    y <span style=color:#f92672>=</span> decode(x)
+
+    <span style=color:#66d9ef>try</span>:
+        int(y)
+        postfix<span style=color:#f92672>.</span>append(y)
+    <span style=color:#66d9ef>except</span>:
+        <span style=color:#66d9ef>pass</span>
+
+    rep<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;0123456789&#34;</span>
+    <span style=color:#66d9ef>for</span> ch <span style=color:#f92672>in</span> y:
+        <span style=color:#66d9ef>if</span> ch <span style=color:#f92672>in</span> rep:
+            y<span style=color:#f92672>=</span>y<span style=color:#f92672>.</span>replace(ch,<span style=color:#e6db74>&#39;&#39;</span>)
+
+    <span style=color:#66d9ef>if</span> y <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;&#39;</span>: <span style=color:#66d9ef>continue</span>
+
+    cap <span style=color:#f92672>=</span> False
+    rep<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#34;</span>
+    <span style=color:#66d9ef>for</span> ch <span style=color:#f92672>in</span> y:
+        <span style=color:#66d9ef>if</span> ch <span style=color:#f92672>in</span> rep:
+            cap <span style=color:#f92672>=</span> True
+
+    y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>lower()
+
+    <span style=color:#66d9ef>if</span> y<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;.&#39;</span>) <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;.&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)
+        append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;.&#34;</span>
+    <span style=color:#66d9ef>if</span> y<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;,&#39;</span>) <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;,&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)
+        append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;,&#34;</span>
+    <span style=color:#66d9ef>if</span> y<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;!&#39;</span>) <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;!&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)
+        append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;!&#34;</span>
+    <span style=color:#66d9ef>if</span> y<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;?&#39;</span>) <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;?&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)
+        append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;?&#34;</span>
+    <span style=color:#66d9ef>if</span> y<span style=color:#f92672>.</span>find(<span style=color:#e6db74>&#39;;&#39;</span>) <span style=color:#f92672>&gt;=</span> <span style=color:#ae81ff>0</span>:
+        y <span style=color:#f92672>=</span> y<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;;&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)
+        append <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;;&#34;</span>
+
+    decoded <span style=color:#f92672>=</span> ana<span style=color:#f92672>.</span>process(words, y) <span style=color:#f92672>+</span> append
+    <span style=color:#66d9ef>if</span> cap:
+        <span style=color:#66d9ef>if</span> len(decoded) <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>1</span>:
+            decoded <span style=color:#f92672>=</span> decoded[<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>upper() <span style=color:#f92672>+</span> decoded[<span style=color:#ae81ff>1</span>:]
+        <span style=color:#66d9ef>else</span>:
+            decoded <span style=color:#f92672>=</span> decoded[<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>upper()
+
+    <span style=color:#66d9ef>print</span> y, decoded
+    answers <span style=color:#f92672>+=</span> [decoded]
+    <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;progress: [</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>]&#34;</span> <span style=color:#f92672>%</span> <span style=color:#e6db74>&#39; &#39;</span><span style=color:#f92672>.</span>join(answers)
+
+xx <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39; &#39;</span><span style=color:#f92672>.</span>join(answers)
+<span style=color:#66d9ef>print</span> xx
+xx <span style=color:#f92672>=</span> xx <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34; &#34;</span> <span style=color:#f92672>+</span> postfix[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34; &#34;</span> <span style=color:#f92672>+</span> postfix[<span style=color:#ae81ff>1</span>]
+<span style=color:#66d9ef>print</span> xx
+r<span style=color:#f92672>.</span>sendline(xx)
+
+<span style=color:#66d9ef>print</span> r<span style=color:#f92672>.</span>recv()
+<span style=color:#66d9ef>print</span> r<span style=color:#f92672>.</span>recv()
+
+</code></pre></div></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/>https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/ class=prev rel=prev title="Pwn2Win 2016 Square Infinite Spiral Writeup"><i class="iconfont icon-left"></i>&nbsp;Pwn2Win 2016 Square Infinite Spiral Writeup</a>
+<a href=https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/ class=next rel=next title="Pwn2Win 2016 Sleeper Cell (Reverse) Writeup">Pwn2Win 2016 Sleeper Cell (Reverse) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

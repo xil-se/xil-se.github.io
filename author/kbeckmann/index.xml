@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kbeckmann on Blog</title><link>https://blog.xil.se/author/kbeckmann/</link><description>Recent content in kbeckmann on Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 23 Nov 2016 10:00:00 +0100</lastBuildDate><atom:link href="https://blog.xil.se/author/kbeckmann/index.xml" rel="self" type="application/rss+xml"/><item><title>RGBPad project</title><link>https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/</link><pubDate>Wed, 23 Nov 2016 10:00:00 +0100</pubDate><guid>https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/</guid><description>Xil.se is more than just a CTF team. We&amp;rsquo;re doing some hardware projects and will start posting about them now. First out is the RGB Pad. A quite quick and dirty project, but fun nonetheless.
+RGBPad is a button pad with fully addressable RGB LEDs. It is acting as an I2C slave and is designed to be connected in an array of multiple devices.
+Architecture Each RGBPad has an STM32F030C8T6 on board that acts as an I2C slave with a unique ID.</description></item><item><title>Pwn2Win 2016 Sleeper Cell (Reverse) Writeup</title><link>https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/</link><pubDate>Mon, 28 Mar 2016 01:07:36 +0200</pubDate><guid>https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/</guid><description>Problem N/A
+Solution We get an ELF 64-bit executable that we should reverse.
+Running it gives us a cat-like interface; it echoes back what comes in on stdin.
+Looking at the disassembly, I don&amp;rsquo;t really feel like understanding it - let&amp;rsquo;s do dynamic RE instead.
+Entering a bunch of &amp;lsquo;A&amp;rsquo;s and stepping, I find interesting things happening:
+[-------------------------------------code-------------------------------------] 0x400e49: lea rsi,[rsp+0x10] 0x400e4e: mov edi,0x6020e0 0x400e53: call 0x400d00 &amp;lt;_ZStrsIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RSbIS4_S5_T1_E@plt&amp;gt; =&amp;gt; 0x400e58: mov rdx,QWORD PTR [rax] 0x400e5b: mov rdx,QWORD PTR [rdx-0x18] 0x400e5f: test BYTE PTR [rax+rdx*1+0x20],0x5 0x400e64: jne 0x400f20 0x400e6a: lea rsi,[rsp+0x10] [------------------------------------stack-------------------------------------] 0000| 0x7fffffffe790 --&amp;gt; 0x601de0 --&amp;gt; 0x4011e0 (cmp QWORD PTR [rip+0x200c18],0x0 # 0x601e00) 0008| 0x7fffffffe798 --&amp;gt; 0x4010ff (add rsp,0x18) 0016| 0x7fffffffe7a0 --&amp;gt; 0x615598 ('A' &amp;lt;repeats 44 times&amp;gt;) 0024| 0x7fffffffe7a8 --&amp;gt; 0xff 0032| 0x7fffffffe7b0 --&amp;gt; 0x615548 (&amp;quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP&amp;quot;) 0040| 0x7fffffffe7b8 --&amp;gt; 0x40171d (add rbx,0x1) 0048| 0x7fffffffe7c0 --&amp;gt; 0x615608 (&amp;quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP&amp;quot;) 0056| 0x7fffffffe7c8 --&amp;gt; 0x0 [------------------------------------------------------------------------------] Legend: code, data, rodata, value Breakpoint 1, 0x0000000000400e58 in ?</description></item><item><title>Pwn2Win 2016 QRGrams Writeup</title><link>https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/</link><pubDate>Mon, 28 Mar 2016 00:52:12 +0200</pubDate><guid>https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/</guid><description>Problem N/A. Something about QR and anagrams.
+Solution Connect to a server and get a bunch of ascii and ansi QR codes, then are supposed to reply with a text and some numbers.
+I solved it using qrtools, png and an anagram solver I found using Google. The anagram solver needs a dictionary to work, so I had to find a sorted word list by frequency (N-gram, the hint in the challenge name).</description></item><item><title>Pwn2Win 2016 Square Infinite Spiral Writeup</title><link>https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/</link><pubDate>Mon, 28 Mar 2016 00:30:27 +0200</pubDate><guid>https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/</guid><description>Problem Didn&amp;rsquo;t save the original text but here are my words:
+Imagine an infinite 2d grid. Start at (0, 0). Move one unit right, then turn left whenever possible so that you don&amp;rsquo;t intersect with your trail. I.e. make a counter clock wise spiral. The challenge input is the number of iterations, the solution is the coordinate where the point ends up.
+For input=4, the solution is (-1, 1)
+---------- ------ | | | | | .</description></item><item><title>BCTF 2016 Upload (Forensics 200) Writeup</title><link>https://blog.xil.se/posts/bctf-2016-upload-forensics-kbeckmann/</link><pubDate>Mon, 21 Mar 2016 06:41:21 +0100</pubDate><guid>https://blog.xil.se/posts/bctf-2016-upload-forensics-kbeckmann/</guid><description>Problem Where are the files I just uploaded?
+The files in the links below are the same, download any of them to begin hacking!
+disk.img.xz - google drive link
+disk.img.xz - dropbox link
+disk.img.xz - baidu link
+Solution We get a packed binary blob. Unpack it using xz and use file to see what it is.
+$ xz -d disk.img.xz $ file disk.img disk.img: BTRFS Filesystem sectorsize 4096, nodesize 16384, leafsize 16384, UUID=89011762- aee-4847-9e0f-bca52fd99e0d, 155820032/2147483648 bytes used, 1 devices Oh a BTRFS image.</description></item><item><title>Boston Key Party 2016 Jit in my pants (RE 3) Writeup</title><link>https://blog.xil.se/posts/bkp-2016-jit-re-kbeckmann/</link><pubDate>Mon, 07 Mar 2016 17:00:00 +0100</pubDate><guid>https://blog.xil.se/posts/bkp-2016-jit-re-kbeckmann/</guid><description>Problem Because reversing an obfuscated jit&amp;rsquo;ed virtual machine for 3 points is fun!
+(re 3, solved by 38)
+Solution I downloaded it immediately when it was released and solved it really fast, but it turned out they uploaded the wrong binary. After a while they uploaded the proper binary and the fun could begin.
+The binary takes the flag as argv[1]: ./c3803116bd70e802483d3bc4c4b564d2 BKPCTF{flag...}.
+We&amp;rsquo;re provided with a binary with a strange loop and a call to a function pointer.</description></item><item><title>InternetWache 2016 Eso Taaape (Reverse 80) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-rev80-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 01:18:38 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-rev80-kbeckmann/</guid><description>Problem Description: I once took a nap on my keyboard. I dreamed of a brand new language, but I could not decipher it nor get its meaning. Can you help me? Hint: Replace the spaces with either &amp;lsquo;{&amp;rsquo; or &amp;lsquo;}&amp;rsquo; in the solution. Hint: Interpreters don&amp;rsquo;t help. Operations write to the current index.
+(rev80, solved by 95)
+Attachment: rev80.zip
+Solution $ cat task/priner.tb ## %% %++ %++ %++ %# *&amp;amp;* @** %# **&amp;amp;* ***-* ***-* %++ %++ @*** *-* @*** @** *+** @*** ***+* @*** **+** ***+* %++ @*** #% %% %++ %++ %++ %++ @* %# %++ %++ %++ %% *&amp;amp;** @* @*** *-** @* %# %++ @** *-** *-** **-*** **-*** **-*** @** @*** #% %% %++ %++ %++ %++ %# *+** %++ @** @* %# *+** @*** ## %% @*** It took some time to find out what language this is, but since the title of the challenge is Eso Taaape, you could see this as a hint towards esoteric languages and something tape based.</description></item><item><title>InternetWache 2016 ServerfARM (Reverse 70) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-rev70-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 01:18:38 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-rev70-kbeckmann/</guid><description>Problem Description: Someone handed me this and told me that to pass the exam, I have to extract a secret string. I know cheating is bad, but once does not count. So are you willing to help me?
+(rev70, solved by 184)
+Attachment: rev70.zip
+Solution The zip contains an ARM binary that seems to be compiled in a pretty nice way, no -O3 here.
+I reversed the binary and could rebuild the flag from the execution paths.</description></item><item><title>InternetWache 2016 File Checker (Reverse 60) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-rev60-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 01:10:57 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-rev60-kbeckmann/</guid><description>Problem Description: My friend sent me this file. He told that if I manage to reverse it, I&amp;rsquo;ll have access to all his devices. My misfortune that I don&amp;rsquo;t know anything about reversing :/
+(rev60, solved by 220)
+Attachment: rev60.zip
+Solution Looking at the provided binary we quickly see that it is reading a file .password and compares its contents to a set of values.
+v4 = 4846; v5 = 4832; .</description></item><item><title>InternetWache 2016 Remote Printer (Exploit 80) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-exp80-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 00:36:12 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-exp80-kbeckmann/</guid><description>Problem Description: Printer are very very important for offices. Especially for remote printing. My boss told me to build a tool for that task.
+(exp80, solved by 125)
+Attachment: exp80.zip
+Service: 188.166.133.53:12377
+Solution This one was a bit harder. We are provided with a binary that listens on a port for incoming connections. When it gets a connection it reads an ip address and a port from the socket and connects to it.</description></item><item><title>InternetWache 2016 FlagStore (Exploit 70) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-exp70-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 00:08:47 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-exp70-kbeckmann/</guid><description>Problem Description: Here&amp;rsquo;s the ultimate flag store. Store and retrieve your flags whenever you want.
+(exp70, solved by 244)
+Attachment: exp70.zip
+Service: 188.166.133.53:12157
+Solution The zip contains c-code for the challenge. Looking at it I immediately see an overflow and an interesting location for the admin flag.
+char username[500]; int is_admin = 0; // &amp;lt;-- can be overwritten char password[500]; ... printf(&amp;#34;Enter an username:&amp;#34;); scanf(&amp;#34;%s&amp;#34;, username); // scanf will overwrite username and is_admin The exploit is to simply send a long username and a \x01 byte.</description></item><item><title>InternetWache 2016 EquationSolver (Exploit 60) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-exp60-kbeckmann/</link><pubDate>Sun, 21 Feb 2016 00:02:30 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-exp60-kbeckmann/</guid><description>Problem Description: I created a program for an unsolveable equation system. My friend somehow forced it to solve the equations. Can you tell me how he did it?
+(exp60, solved by 252)
+Service: 188.166.133.53:12049
+Solution Interacting with the server, we see the following:
+$ nc 188.166.133.53 12049 Solve the following equations: X &amp;gt; 1337 X * 7 + 4 = 1337 Enter the solution X: 190 You entered: 190 190 is not bigger than 1337 WRONG!</description></item><item><title>InternetWache 2016 Ruby's count (Exploit 50) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-exp50-kbeckmann/</link><pubDate>Sat, 20 Feb 2016 23:56:46 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-exp50-kbeckmann/</guid><description>Problem Description: Hi, my name is Ruby. I like converting characters into ascii values and then calculating the sum.
+(exp50, solved by 217)
+Service: 188.166.133.53:12037
+Solution We have to send characters where the sum adds upp to over 1020.
+$ nc 188.166.133.53 12037 Let me count the ascii values of 10 characters: ffffffffff Sum is: 1020 That's not enough (1020 &amp;lt; 1020) :( $ nc 188.166.133.53 12037 Let me count the ascii values of 10 characters: qqqqqqqqqq WRONG!</description></item><item><title>InternetWache 2016 Bank (Crypto 90) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-crypto90-kbeckmann/</link><pubDate>Sat, 20 Feb 2016 23:44:08 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-crypto90-kbeckmann/</guid><description>Problem Description: Everyone knows that banks are insecure. This one super secure and only allows only 20 transactions per session. I always wanted a million on my account.
+(crypto90, solved by 104)
+Attachment: crypto90.zip
+Service: 188.166.133.53:10061
+Solution The challenge file contains a python script that is also running on the challenge server.
+Running it shows us an interface to do transactions.
+We can put money into our account by creating a transaction and then signing it using a signature that we get from the server.</description></item><item><title>InternetWache 2016 A numbers game II (Crypto 70) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/</link><pubDate>Sat, 20 Feb 2016 23:29:14 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/</guid><description>Problem Description: There was this student hash design contest. All submissions were crap, but had promised to use the winning algorithm for our important school safe. We hashed our password and got &amp;lsquo;00006800007d&amp;rsquo;. Brute force isn&amp;rsquo;t effective anymore and the hash algorithm had to be collision-resistant, so we&amp;rsquo;re good to go, aren&amp;rsquo;t we?
+(crypto70, solved by 86)
+Attachment: crypto70.zip
+Service: 188.166.133.53:10009
+Solution Connecting to the service we are faced with a bruteforce blocker / challenge.</description></item><item><title>InternetWache 2016 Oh Bob! (Crypto 60) Writeup</title><link>https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/</link><pubDate>Sat, 20 Feb 2016 23:11:07 +0100</pubDate><guid>https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/</guid><description>Problem Description: Alice wants to send Bob a confidential message. They both remember the crypto lecture about RSA. So Bob uses openssl to create key pairs. Finally, Alice encrypts the message with Bob&amp;rsquo;s public keys and sends it to Bob. Clever Eve was able to intercept it. Can you help Eve to decrypt the message?
+(crypto60, solved by 167)
+Attachment: crypto60.zip
+Solution The challenge zip file contains 3 public keys and a file with three encrypted strings.</description></item><item><title>SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup</title><link>https://blog.xil.se/posts/sharifctf-2016-misc-secure2/</link><pubDate>Sat, 06 Feb 2016 23:13:14 +0100</pubDate><guid>https://blog.xil.se/posts/sharifctf-2016-misc-secure2/</guid><description>Problem You should fix vulnerabilities of the given source code, WITHOUT changing its normal behaviour. Link
+Points: 300
+Solved by 83 team(s)
+Solution Just like the previous Sec-Coding 1, we get a link to a web UI where we should upload patched C++ code.
+We are provided with windows C++ code that prints a repeated message based on the input.
+The original code was pretty bad so I simply rewrote it completely and this solved all the security issues.</description></item><item><title>SharifCTF 2016 Login to System (PWN 200) Writeup</title><link>https://blog.xil.se/posts/sharifctf-2016-pwn-login/</link><pubDate>Sat, 06 Feb 2016 22:31:14 +0100</pubDate><guid>https://blog.xil.se/posts/sharifctf-2016-pwn-login/</guid><description>Problem Can you login to this system without username and password?
+telnet ctf.sharif.edu 27515
+Run and capture the flag!
+Download
+Points: 200
+Solved by 106 team(s)
+Solution We are provided with a x86-64 linux executable:
+Question: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=76aad63504451c70d8aa4e72299d2821fcf1b9f1, stripped It is a server that starts a new handler thread for each incoming TCP connection on port 27515.</description></item><item><title>SharifCTF 2016 Serial (RE 150) Writeup</title><link>https://blog.xil.se/posts/sharifctf-2016-re6-serial/</link><pubDate>Sat, 06 Feb 2016 22:02:14 +0100</pubDate><guid>https://blog.xil.se/posts/sharifctf-2016-re6-serial/</guid><description>Problem Run and capture the flag!
+Points: 150
+Solved by 110 team(s)
+Solution We are provided with a x86-64 linux executable:
+rgg: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.26, BuildID[sha1]=77e92e8b1bd4f26641bab4dbf563037a7b9538d2, not stripped The binary isn&amp;rsquo;t very big but looks funny in various decompilers and disassemblers.
+The code does a lot of unaligned jumps and fills the section in between with junk, so disassemblers get really confused.</description></item><item><title>SharifCTF 2016 SRM (RE 50) Writeup</title><link>https://blog.xil.se/posts/sharifctf-2016-re-srm-kbeckmann/</link><pubDate>Sat, 06 Feb 2016 21:41:14 +0100</pubDate><guid>https://blog.xil.se/posts/sharifctf-2016-re-srm-kbeckmann/</guid><description>Problem The flag is : The valid serial number
+Points: 50
+Solved by 176 team(s)
+Solution We are provided with a PE32 windows executable:
+RM.exe: PE32 executable (GUI) Intel 80386, for MS Windows The binary has a lot of code, so I started to look for how it interacts with the user.
+sub_401280() calls message box APIs so it looks interesting. It turns out that this is where all the magic happens.</description></item><item><title>SharifCTF 2016 dMd (RE 50) Writeup</title><link>https://blog.xil.se/posts/sharifctf-2016-re-dmd-kbeckmann/</link><pubDate>Sat, 06 Feb 2016 21:25:14 +0100</pubDate><guid>https://blog.xil.se/posts/sharifctf-2016-re-dmd-kbeckmann/</guid><description>Problem Attachment: A data blob
+Flag is : The valid input
+Points: 50
+Solved by 243 team(s)
+Solution We are provided with a x86-64 linux binary:
+dMd: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=2643fecd383362fe9593ef8605a9ce882a85a38a, not stripped After looking at the disassembly, we find a series of hard coded checks.
+It&amp;rsquo;s simply checking the md5 sum of the input for a hard coded value.</description></item></channel></rss>

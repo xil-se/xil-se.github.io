@@ -1,0 +1,84 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/><link rel=next href=https://blog.xil.se/posts/xil-2020-new-blog-sa7dse/><link rel=canonical href=https://blog.xil.se/posts/is-eval-safe-yet-rspkt/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Is eval safe yet? Arbitrary code execution in Python | Blog</title><meta name=title content="Is eval safe yet? Arbitrary code execution in Python | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Is eval safe yet? Arbitrary code execution in Python","headline":"Is eval safe yet? Arbitrary code execution in Python","description":"TL;DR Found use of eval in the Python gettext module. Bypassed weak security checks. Gained arbitrary code execution.\nBackground In Beyond PEP 8, an excellent talk by Raymond Hettinger, he jokingly comments that namedtouple is implemented using eval (or exec, to be exact), and that it\u0026rsquo;s defensible given the right circumstances. While this is sometimes true, I figured I\u0026rsquo;d clone the cpython repository and grep for any usages of eval-like functions.","inLanguage":"en-us","author":"rspkt","creator":"rspkt","publisher":"rspkt","accountablePerson":"rspkt","copyrightHolder":"rspkt","copyrightYear":"2017","datePublished":"2017-01-14 16:00:00 \u002b0100 \u002b0100","dateModified":"2017-01-14 16:00:00 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/is-eval-safe-yet-rspkt\/","wordCount":"849","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Is eval safe yet? Arbitrary code execution in Python</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/rspkt rel=author>rspkt</a> with ♥
+<span class=post-time>on <time datetime=2017-01-14 itemprop=datePublished>January 14, 2017</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/security/>security</a></span></div></header><div class=post-content><h2 id=tldr>TL;DR</h2><p>Found use of <code>eval</code> in the Python <code>gettext</code> module. Bypassed weak security
+checks. Gained arbitrary code execution.</p><h2 id=background>Background</h2><p>In <a href="https://youtu.be/wf-BqAjZb8M?t=2917"><em>Beyond PEP 8</em></a>, an excellent talk by
+Raymond Hettinger, he jokingly comments that <code>namedtouple</code> is implemented using
+<code>eval</code> (<a href=https://github.com/python/cpython/blob/master/Lib/collections/__init__.py#L303>or <code>exec</code>, to be exact</a>),
+and that it&rsquo;s defensible given the right circumstances. While this is sometimes
+true, I figured I&rsquo;d clone the cpython repository and grep for any usages of
+<code>eval</code>-like functions.</p><p>What caught my attention was the function <code>c2py</code> in the <code>gettext</code> module. The
+<code>gettext</code> module contains bindings for the <a href=https://www.gnu.org/software/gettext/><code>gettext</code> system</a>,
+which is an internationalization and localization system. One of the
+responsibilities of <code>gettext</code> is to convert between plural forms in different
+languages. The plural forms for a language are defined using a
+<a href=https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/Plural-forms.html>C-like DSL</a>.
+The DSL is basically a nested ternary expression with different enumerated
+outcomes, one for each plural form of the specific language. The variable in the
+ternary expression is always named <code>n</code>, and represents the count for which a
+plural form should be returned.</p><p>For English, the <code>gettext</code> plural form is written as:</p><pre><code>n != 1
+</code></pre><p>The above expression will evaluate to either plural form 0 when <code>n</code> is singular,
+or 1 when plural. For other languages, several plural forms exist. Take for
+example <a href=http://docs.translatehouse.org/projects/localization-guide/en/latest/l10n/pluralforms.html>Russian</a>:</p><pre><code>n % 10 == 1 &amp;&amp; n % 100 != 11 ? 0 : n % 10 &gt;= 2 &amp;&amp; n % 10 &lt;= 4 &amp;&amp; (n % 100 &lt; 10 || n % 100 &gt;= 20) ? 1 : 2
+</code></pre><h2 id=eval-to-the-rescue>Eval to the rescue</h2><p>Due to the expressiveness required by this language, writing a parser that
+evaluates these plural forms is not trivial. We could however try to translate
+these C-like expressions to Python and throw <code>eval</code> at it. The Russian plural
+form rewritten in Python would look like this:</p><pre><code>(0 if n % 10 == 1 and n % 100 != 11 else (1 if n % 10 &gt;= 2 and n % 10 &lt;= 4 and (n % 100 &lt; 10 or n % 100 &gt;= 20) else 2))
+</code></pre><p><a href=https://github.com/python/cpython/blob/69f0c06c3965ace34ccc8b9a932a8bfd842a52da/Lib/gettext.py#L63>This is exactly what was done in <code>c2py</code> in the <code>gettext</code> module</a>.
+Just like the name of the function suggests, the C-like syntax is converted to
+Python, and is subsequently evaluated to a lambda function with <code>eval</code>:</p><pre><code>eval('lambda n: int(%s)' % plural)
+</code></pre><p>A valid call to c2py could look something like this:</p><pre><code>apples = ['Cox Orange', 'Granny Smith']
+[&quot;apple&quot;, &quot;apples&quot;][gettext.c2py('n != 1')(len(apples))]
+
+&quot;apples&quot;
+</code></pre><h2 id=security>Security</h2><p>No one in their right mind would call <code>eval</code> on user input without having the
+security checks necessary in place. The security checks implemented in <code>c2py</code>
+makes sure that <code>n</code> is the only allowed variable in the plural expressions. It
+also does some general input validation, like checking that parentheses are
+balanced.</p><p>My first discovery here was that the validation didn&rsquo;t prevent expressions
+that were using <code>n</code> as a function. As long as there is a token that the Python
+<code>tokenize</code> module classifies as a <code>NAME</code> token with the name <code>n</code>, the security
+checks will pass. The below code snippet successfully spawned a shell:</p><pre><code>gettext.c2py('n()')(lambda: os.system('sh'))
+</code></pre><p>This isn&rsquo;t really a high risk issue, since the input to the lambda function
+most likely will be an integer given by some count-logic, and not user input.</p><h2 id=exploitation>Exploitation</h2><p>Not being able to take the function-call bug any further, I kept investigating
+ways in which I could break the security checks. After a lot of trial-and-error,
+I found a way to confuse the Python tokenizer. If our entire input is
+interpreted as a string, the input should pass the security checks. Furthermore,
+it doesn&rsquo;t even have to be a valid string, since the security checks pass even
+though the tokenizer returns a result with <code>ERRORTOKEN</code>. The following input
+string will pass the security checks but break during evaluation:</p><pre><code>gettext.c2py('&quot;eval(foo) &quot;&quot;')
+</code></pre><p>Next on the agenda is to make sure the invalid string we entered is actually
+interpreted as a valid expression. Since we&rsquo;ve bypassed the tokenizer, the
+code that translates and builds the Python expression will assume that all
+parentheses are matched. If we insert a left parentheses after the first double
+quote, and some boolean operator before the empty string, we&rsquo;ll get a valid
+expression:</p><pre><code>gettext.c2py('&quot;(eval(foo) &amp;&amp; &quot;&quot;')(0)
+
+----&gt; 1 gettext.c2py('&quot;(eval(foo) &amp;&amp; &quot;&quot;')(0)
+   gettext.pyc in &lt;lambda&gt;(n)
+   NameError: global name 'foo' is not defined
+</code></pre><p>From here, spawning a shell is trivial. The <code>c2py</code> module imports the <code>os</code>
+module, so all we need to do to get full access to the host system is</p><pre><code>gettext.c2py('&quot;(os.system(\'sh\') &amp; &quot;&quot;')(0)
+
+$
+</code></pre><h2 id=enter-python-37>Enter Python 3.7</h2><p>Giving the tokenizer-based security a second though, I wondered how it would
+react to the <a href=https://www.python.org/dev/peps/pep-0498/>new literal string interpolation</a>
+introduced in Python 3.7. (Not so) surprisingly, this string gets no special
+attention by the tokenizer, and calling <code>c2py</code> with an interpolated string just
+works:</p><pre><code>gettext.c2py('f&quot;{os.system(\'sh\')}&quot;')(0)
+
+$
+</code></pre><h2 id=conclusion>Conclusion</h2><p>This bug was first disclosed to <a href=mailto:security@python.org>security@python.org</a>, and later on added to the
+<a href=http://bugs.python.org/issue28563>Python issue tracker</a> due to its low-risk
+nature. Generally these plural forms are specified in
+<a href=https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html>PO files</a>
+which is an unlikely attack vector.</p><p>The issue was resolved by implementing an actual parser for the <code>gettext</code> plural
+form language.</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/is-eval-safe-yet-rspkt/>https://blog.xil.se/posts/is-eval-safe-yet-rspkt/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/ class=prev rel=prev title="RGBPad project"><i class="iconfont icon-left"></i>&nbsp;RGBPad project</a>
+<a href=https://blog.xil.se/posts/xil-2020-new-blog-sa7dse/ class=next rel=next title="The New Xil Blog">The New Xil Blog&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

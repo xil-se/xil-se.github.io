@@ -1,0 +1,95 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/bctf-2016-upload-forensics-kbeckmann/><link rel=next href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Pwn2Win 2016 Square Infinite Spiral Writeup | Blog</title><meta name=title content="Pwn2Win 2016 Square Infinite Spiral Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Pwn2Win 2016 Square Infinite Spiral Writeup","headline":"Pwn2Win 2016 Square Infinite Spiral Writeup","description":"Problem Didn\u0026rsquo;t save the original text but here are my words:\nImagine an infinite 2d grid. Start at (0, 0). Move one unit right, then turn left whenever possible so that you don\u0026rsquo;t intersect with your trail. I.e. make a counter clock wise spiral. The challenge input is the number of iterations, the solution is the coordinate where the point ends up.\nFor input=4, the solution is (-1, 1)\n---------- ------ | | | | | .","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-03-28 00:30:27 \u002b0200 \u002b0200","dateModified":"2016-03-28 00:30:27 \u002b0200 \u002b0200","url":"https:\/\/blog.xil.se\/posts\/pwn2win-2016-spiral-kbeckmann\/","wordCount":"497","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Pwn2Win 2016 Square Infinite Spiral Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-03-28 itemprop=datePublished>March 28, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><p>Didn&rsquo;t save the original text but here are my words:</p><p>Imagine an infinite 2d grid. Start at (0, 0). Move one unit right, then turn left whenever possible so that you don&rsquo;t intersect with your trail. I.e. make a counter clock wise spiral. The challenge input is the number of iterations, the solution is the coordinate where the point ends up.</p><p>For input=4, the solution is (-1, 1)</p><pre><code>----------
+  ------ |
+  |    | |
+  | .--- |
+  --------
+
+</code></pre><h1 id=solution>Solution</h1><p>It took a while for me to get what the challenge really was about. Instead of wasting time on trying to solve the problem, I did what a proper script kiddie does well - I used Google. I found a very good <a href=http://stackoverflow.com/a/19287714/1747702>solution on stackoverflow</a> that takes the number of iterations and returns the coordinates in O(1) time.</p><p>The challenge input is a huge number, sometimes over 1024 bits in length, so we need to support that.</p><p>I re-wrote the code in python, rotated the coordinates (since the spiral went clockwise in the code above) and adapted it to use <code>decimal</code> to get arbitrary precision. Then just hooked it up to the game server and got the flag.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> math
+<span style=color:#f92672>import</span> decimal
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+context<span style=color:#f92672>.</span>log_level <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+
+_ctx <span style=color:#f92672>=</span> decimal<span style=color:#f92672>.</span>getcontext()
+_ctx<span style=color:#f92672>.</span>prec<span style=color:#f92672>=</span><span style=color:#ae81ff>2</span><span style=color:#f92672>**</span><span style=color:#ae81ff>12</span>
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>floor</span>(x):
+    <span style=color:#66d9ef>with</span> decimal<span style=color:#f92672>.</span>localcontext() <span style=color:#66d9ef>as</span> ctx:
+        <span style=color:#75715e>#ctx.prec=100000000000000000</span>
+        ctx<span style=color:#f92672>.</span>prec<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span>
+        ctx<span style=color:#f92672>.</span>rounding<span style=color:#f92672>=</span>decimal<span style=color:#f92672>.</span>ROUND_FLOOR
+        <span style=color:#66d9ef>return</span> x<span style=color:#f92672>.</span>to_integral_exact()
+
+<span style=color:#75715e># http://stackoverflow.com/a/19287714/1747702</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>spiral</span>(n):
+    <span style=color:#75715e>#given n an index in the squared spiral</span>
+    <span style=color:#75715e>#p the sum of point in inner square</span>
+    <span style=color:#75715e>#a the position on the current square</span>
+    <span style=color:#75715e>#n = p + a</span>
+
+    _n <span style=color:#f92672>=</span> decimal<span style=color:#f92672>.</span>Decimal(n)
+
+    <span style=color:#75715e>#r = math.floor((math.sqrt(n + 1) - 1) / 2) + 1</span>
+    r <span style=color:#f92672>=</span> long(floor((decimal<span style=color:#f92672>.</span>Decimal(_n <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>)<span style=color:#f92672>.</span>sqrt() <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>) <span style=color:#f92672>/</span> <span style=color:#ae81ff>2</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>)
+
+    <span style=color:#75715e>#compute radius : inverse arithmetic sum of 8+16+24+...=</span>
+    p <span style=color:#f92672>=</span> (<span style=color:#ae81ff>8</span> <span style=color:#f92672>*</span> r <span style=color:#f92672>*</span> (r <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>)) <span style=color:#f92672>/</span> <span style=color:#ae81ff>2</span>
+    <span style=color:#75715e>#compute total point on radius -1 : arithmetic sum of 8+16+24+...</span>
+
+    en <span style=color:#f92672>=</span> r <span style=color:#f92672>*</span> <span style=color:#ae81ff>2</span>
+    <span style=color:#75715e>#points by face</span>
+
+    a <span style=color:#f92672>=</span> (<span style=color:#ae81ff>1</span> <span style=color:#f92672>+</span> n <span style=color:#f92672>-</span> p) <span style=color:#f92672>%</span> (r <span style=color:#f92672>*</span> <span style=color:#ae81ff>8</span>)
+    <span style=color:#75715e>#compute de position and shift it so the first is (-r,-r) but (-r+1,-r)</span>
+    <span style=color:#75715e>#so square can connect</span>
+
+    pos <span style=color:#f92672>=</span> [<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, r];
+    tmp <span style=color:#f92672>=</span> math<span style=color:#f92672>.</span>floor(a <span style=color:#f92672>/</span> (r <span style=color:#f92672>*</span> <span style=color:#ae81ff>2</span>))
+    <span style=color:#75715e>#find the face : 0 top, 1 right, 2, bottom, 3 left</span>
+    <span style=color:#66d9ef>if</span> tmp <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>:
+        pos[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> a <span style=color:#f92672>-</span> r
+        pos[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#f92672>-</span>r
+    <span style=color:#66d9ef>elif</span> tmp <span style=color:#f92672>==</span> <span style=color:#ae81ff>1</span>:
+        pos[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> r
+        pos[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> (a <span style=color:#f92672>%</span> en) <span style=color:#f92672>-</span> r
+    <span style=color:#66d9ef>elif</span> tmp <span style=color:#f92672>==</span> <span style=color:#ae81ff>2</span>:
+        pos[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> r <span style=color:#f92672>-</span> (a <span style=color:#f92672>%</span> en)
+        pos[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> r
+    <span style=color:#66d9ef>elif</span> tmp <span style=color:#f92672>==</span> <span style=color:#ae81ff>3</span>:
+        pos[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#f92672>-</span>r
+        pos[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> r <span style=color:#f92672>-</span> (a <span style=color:#f92672>%</span> en)
+
+    <span style=color:#75715e>#print(&#34;n : &#34;, n, &#34; r : &#34;, r, &#34; p : &#34;, p, &#34; a : &#34;, a, &#34;  --&gt;  &#34;, pos)</span>
+    newpos <span style=color:#f92672>=</span> [<span style=color:#f92672>-</span>pos[<span style=color:#ae81ff>1</span>], pos[<span style=color:#ae81ff>0</span>], r]
+    <span style=color:#66d9ef>return</span> newpos
+
+<span style=color:#75715e>#for i in xrange(25):</span>
+<span style=color:#75715e>#    print i+1, spiral(i)</span>
+
+<span style=color:#75715e>#print spiral(87617132336372079846506616471286455749443259655954533789357600981378524569118335678751536947646080176816437606601550323221987024289898039719680451033326652052129641143066615453270361535742146132971398209593358690841000867875335581644900086496061447470988285895603240925546341429765197561195418284611512072176183221118915681135559699902117689293065428013532910524117825539447351947261308698064828704511533056969797355257686729816425986743810441213016227815358114008621623753229561235048044)</span>
+
+p <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#34;openssl s_client -connect programming.pwn2win.party:9004&#34;</span>, shell<span style=color:#f92672>=</span>True)
+
+p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>&#34;Verify return code: 0 (ok)</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>---</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>)
+
+<span style=color:#66d9ef>while</span> True:
+    N<span style=color:#f92672>=</span>p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>)
+    <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;N=&#34;</span>, N
+    ret <span style=color:#f92672>=</span> spiral(long(N) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>)
+    p<span style=color:#f92672>.</span>sendline(str(ret[<span style=color:#ae81ff>0</span>]) <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34; &#34;</span> <span style=color:#f92672>+</span> str(ret[<span style=color:#ae81ff>1</span>]))
+
+<span style=color:#66d9ef>print</span> p<span style=color:#f92672>.</span>recv()
+
+<span style=color:#75715e>#CTF-BR{iT-Was-JusT-BIgInteGeR-MFQnQRqKLcSHi}</span>
+
+</code></pre></div></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/>https://blog.xil.se/posts/pwn2win-2016-spiral-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/bctf-2016-upload-forensics-kbeckmann/ class=prev rel=prev title="BCTF 2016 Upload (Forensics 200) Writeup"><i class="iconfont icon-left"></i>&nbsp;BCTF 2016 Upload (Forensics 200) Writeup</a>
+<a href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/ class=next rel=next title="Pwn2Win 2016 QRGrams Writeup">Pwn2Win 2016 QRGrams Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

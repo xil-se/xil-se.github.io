@@ -1,0 +1,52 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/><link rel=next href=https://blog.xil.se/posts/pwn2win-2016-sequences-rspkt/><link rel=canonical href=https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Pwn2Win 2016 Sleeper Cell (Reverse) Writeup | Blog</title><meta name=title content="Pwn2Win 2016 Sleeper Cell (Reverse) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Pwn2Win 2016 Sleeper Cell (Reverse) Writeup","headline":"Pwn2Win 2016 Sleeper Cell (Reverse) Writeup","description":"Problem N\/A\nSolution We get an ELF 64-bit executable that we should reverse.\nRunning it gives us a cat-like interface; it echoes back what comes in on stdin.\nLooking at the disassembly, I don\u0026rsquo;t really feel like understanding it - let\u0026rsquo;s do dynamic RE instead.\nEntering a bunch of \u0026lsquo;A\u0026rsquo;s and stepping, I find interesting things happening:\n[-------------------------------------code-------------------------------------] 0x400e49:\tlea rsi,[rsp\u002b0x10] 0x400e4e:\tmov edi,0x6020e0 0x400e53:\tcall 0x400d00 \u0026lt;_ZStrsIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RSbIS4_S5_T1_E@plt\u0026gt; =\u0026gt; 0x400e58:\tmov rdx,QWORD PTR [rax] 0x400e5b:\tmov rdx,QWORD PTR [rdx-0x18] 0x400e5f:\ttest BYTE PTR [rax\u002brdx*1\u002b0x20],0x5 0x400e64:\tjne 0x400f20 0x400e6a:\tlea rsi,[rsp\u002b0x10] [------------------------------------stack-------------------------------------] 0000| 0x7fffffffe790 --\u0026gt; 0x601de0 --\u0026gt; 0x4011e0 (cmp QWORD PTR [rip\u002b0x200c18],0x0 # 0x601e00) 0008| 0x7fffffffe798 --\u0026gt; 0x4010ff (add rsp,0x18) 0016| 0x7fffffffe7a0 --\u0026gt; 0x615598 (\u0027A\u0027 \u0026lt;repeats 44 times\u0026gt;) 0024| 0x7fffffffe7a8 --\u0026gt; 0xff 0032| 0x7fffffffe7b0 --\u0026gt; 0x615548 (\u0026quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP\u0026quot;) 0040| 0x7fffffffe7b8 --\u0026gt; 0x40171d (add rbx,0x1) 0048| 0x7fffffffe7c0 --\u0026gt; 0x615608 (\u0026quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP\u0026quot;) 0056| 0x7fffffffe7c8 --\u0026gt; 0x0 [------------------------------------------------------------------------------] Legend: code, data, rodata, value Breakpoint 1, 0x0000000000400e58 in ?","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-03-28 01:07:36 \u002b0200 \u002b0200","dateModified":"2016-03-28 01:07:36 \u002b0200 \u002b0200","url":"https:\/\/blog.xil.se\/posts\/pwn2win-2016-sleeper-cell-kbeckmann\/","wordCount":"259","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Pwn2Win 2016 Sleeper Cell (Reverse) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-03-28 itemprop=datePublished>March 28, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><p>N/A</p><h1 id=solution>Solution</h1><p>We get an ELF 64-bit executable that we should reverse.</p><p>Running it gives us a <code>cat</code>-like interface; it echoes back what comes in on stdin.</p><p>Looking at the disassembly, I don&rsquo;t really feel like understanding it - let&rsquo;s do dynamic RE instead.</p><p>Entering a bunch of &lsquo;A&rsquo;s and stepping, I find interesting things happening:</p><pre><code>[-------------------------------------code-------------------------------------]
+   0x400e49:	lea    rsi,[rsp+0x10]
+   0x400e4e:	mov    edi,0x6020e0
+   0x400e53:	call   0x400d00 &lt;_ZStrsIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RSbIS4_S5_T1_E@plt&gt;
+=&gt; 0x400e58:	mov    rdx,QWORD PTR [rax]
+   0x400e5b:	mov    rdx,QWORD PTR [rdx-0x18]
+   0x400e5f:	test   BYTE PTR [rax+rdx*1+0x20],0x5
+   0x400e64:	jne    0x400f20
+   0x400e6a:	lea    rsi,[rsp+0x10]
+[------------------------------------stack-------------------------------------]
+0000| 0x7fffffffe790 --&gt; 0x601de0 --&gt; 0x4011e0 (cmp    QWORD PTR [rip+0x200c18],0x0        # 0x601e00)
+0008| 0x7fffffffe798 --&gt; 0x4010ff (add    rsp,0x18)
+0016| 0x7fffffffe7a0 --&gt; 0x615598 ('A' &lt;repeats 44 times&gt;)
+0024| 0x7fffffffe7a8 --&gt; 0xff
+0032| 0x7fffffffe7b0 --&gt; 0x615548 (&quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP&quot;)
+0040| 0x7fffffffe7b8 --&gt; 0x40171d (add    rbx,0x1)
+0048| 0x7fffffffe7c0 --&gt; 0x615608 (&quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLRXZJLP&quot;)
+0056| 0x7fffffffe7c8 --&gt; 0x0
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 1, 0x0000000000400e58 in ?? ()
+gdb-peda$
+</code></pre><p>I play around with this and it looks to be a simple rot() based on position. Too lazy, I just use the A-input as key.</p><p>Poking around, I find another string that looks like an encrypted flag: <code>FYM-OI}olte_zi_wdqedd_djrzuj_shgmEDFqo{</code>.</p><pre><code>_ct  = &quot;FYM-OI}olte_zi_wdqedd_djrzuj_shgmEDFqo{&quot;
+_key = &quot;DFHLNRTXDFLPRVBHJPTVBFLTXZDFJXBHJTVBHLR&quot;
+key = [ord(x) - ord('A') for x in _key]
+
+ct = _ct.upper()
+pt = &quot;&quot;
+for i in xrange(len(ct)):
+    if '_{}'.find(ct[i]) &gt;= 0:
+        pt += ct[i]
+        continue
+    x = ord(ct[i]) - ord('A')
+    x = (x - key[i] + 26) % (26)
+    x += ord('A')
+    pt += chr(x)
+print pt
+# CTFVBR}RIOT_IN_PUBLIC_SQUARE_VGZDLIEJD{
+pt=&quot;CTF-BR{riot_in_public_square_vgzdLIEjd}&quot;
+</code></pre><p>Adjusting the case and braces returns the flag <code>CTF-BR{riot_in_public_square_vgzdLIEjd}</code>.</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/>https://blog.xil.se/posts/pwn2win-2016-sleeper-cell-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/pwn2win-2016-qrgrams-kbeckmann/ class=prev rel=prev title="Pwn2Win 2016 QRGrams Writeup"><i class="iconfont icon-left"></i>&nbsp;Pwn2Win 2016 QRGrams Writeup</a>
+<a href=https://blog.xil.se/posts/pwn2win-2016-sequences-rspkt/ class=next rel=next title="Pwn2Win CTF 2016 Sequences (PPC 40) Writeup">Pwn2Win CTF 2016 Sequences (PPC 40) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

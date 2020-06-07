@@ -1,0 +1,105 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/internetwache-2016-rev70-kbeckmann/><link rel=next href=https://blog.xil.se/posts/internetwache-2016-rev-80-arturo182/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-rev80-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>InternetWache 2016 Eso Taaape (Reverse 80) Writeup | Blog</title><meta name=title content="InternetWache 2016 Eso Taaape (Reverse 80) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"InternetWache 2016 Eso Taaape (Reverse 80) Writeup","headline":"InternetWache 2016 Eso Taaape (Reverse 80) Writeup","description":"Problem  Description: I once took a nap on my keyboard. I dreamed of a brand new language, but I could not decipher it nor get its meaning. Can you help me? Hint: Replace the spaces with either \u0026lsquo;{\u0026rsquo; or \u0026lsquo;}\u0026rsquo; in the solution. Hint: Interpreters don\u0026rsquo;t help. Operations write to the current index.\n (rev80, solved by 95)\nAttachment: rev80.zip\nSolution $ cat task\/priner.tb ## %% %\u002b\u002b %\u002b\u002b %\u002b\u002b %# *\u0026amp;* @** %# **\u0026amp;* ***-* ***-* %\u002b\u002b %\u002b\u002b @*** *-* @*** @** *\u002b** @*** ***\u002b* @*** **\u002b** ***\u002b* %\u002b\u002b @*** #% %% %\u002b\u002b %\u002b\u002b %\u002b\u002b %\u002b\u002b @* %# %\u002b\u002b %\u002b\u002b %\u002b\u002b %% *\u0026amp;** @* @*** *-** @* %# %\u002b\u002b @** *-** *-** **-*** **-*** **-*** @** @*** #% %% %\u002b\u002b %\u002b\u002b %\u002b\u002b %\u002b\u002b %# *\u002b** %\u002b\u002b @** @* %# *\u002b** @*** ## %% @*** It took some time to find out what language this is, but since the title of the challenge is Eso Taaape, you could see this as a hint towards esoteric languages and something tape based.","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-02-21 01:18:38 \u002b0100 \u002b0100","dateModified":"2016-02-21 01:18:38 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-rev80-kbeckmann\/","wordCount":"648","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">InternetWache 2016 Eso Taaape (Reverse 80) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-02-21 itemprop=datePublished>February 21, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: I once took a nap on my keyboard. I dreamed of a brand new language, but I could not decipher it nor get its meaning. Can you help me? Hint: Replace the spaces with either &lsquo;{&rsquo; or &lsquo;}&rsquo; in the solution. Hint: Interpreters don&rsquo;t help. Operations write to the current index.</p></blockquote><p>(rev80, solved by 95)</p><p>Attachment: rev80.zip</p><h1 id=solution>Solution</h1><pre><code>$ cat task/priner.tb
+## %% %++ %++ %++ %# *&amp;* @** %# **&amp;* ***-* ***-* %++ %++ @*** *-* @*** @** *+** @*** ***+* @*** **+** ***+* %++ @*** #% %% %++ %++ %++ %++ @* %# %++ %++ %++ %% *&amp;** @* @*** *-** @* %# %++ @** *-** *-** **-*** **-*** **-*** @** @*** #% %% %++ %++ %++ %++ %# *+** %++ @** @* %# *+** @*** ## %% @***
+</code></pre><p>It took some time to find out what language this is, but since the title of the challenge is <em>Eso Taaape</em>, you could see this as a hint towards <em>esoteric</em> languages and something <em>tape</em> based. We found out it was the relatively unknown language <a href=http://esolangs.org/wiki/TapeBagel>TapeBagel</a>.</p><p>The existing implementation in perl seemed a bit broken and did not seem to like the provided code.</p><p>So I put on my robe and a wizard hat and did some attack python-fu. It ain&rsquo;t pretty but i wrote it in just a couple of minutes. Behold, the TapeBagel interpreter!</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>s <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;## </span><span style=color:#e6db74>%%</span><span style=color:#e6db74> </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74># *&amp;* @** %# **&amp;* ***-* ***-* </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74>++ @*** *-* @*** @** *+** @*** ***+* @*** **+** ***+* %++ @*** #</span><span style=color:#e6db74>% %% %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74>++ %++ @* </span><span style=color:#e6db74>%# %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%%</span><span style=color:#e6db74> *&amp;** @* @*** *-** @* </span><span style=color:#e6db74>%# %</span><span style=color:#e6db74>++ @** *-** *-** **-*** **-*** **-*** @** @*** #</span><span style=color:#e6db74>% %% %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74>++ </span><span style=color:#e6db74>%++ %</span><span style=color:#e6db74># *+** %++ @** @* %# *+** @*** ## </span><span style=color:#e6db74>%%</span><span style=color:#e6db74> @*** &#34;</span>
+
+tokens <span style=color:#f92672>=</span> s<span style=color:#f92672>.</span>strip()<span style=color:#f92672>.</span>split(<span style=color:#e6db74>&#39; &#39;</span>)
+
+out <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>
+ints <span style=color:#f92672>=</span> [<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>]
+index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+<span style=color:#66d9ef>for</span> t <span style=color:#f92672>in</span> tokens:
+    <span style=color:#66d9ef>if</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>%%</span><span style=color:#e6db74>&#39;</span>):
+        index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;%++&#39;</span>):
+        ints[index] <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;%#&#39;</span>):
+        index <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;##&#39;</span>):
+        ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+        ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+        ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;#%&#39;</span>):
+        ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+        ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+        ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*&amp;*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**&amp;*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***&amp;*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*&amp;**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**&amp;**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***&amp;**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*&amp;***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**&amp;***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***&amp;***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>*</span> ints[<span style=color:#ae81ff>2</span>]
+
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*-*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**-*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***-*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*-**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**-**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***-**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*-***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**-***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***-***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>-</span> ints[<span style=color:#ae81ff>2</span>]
+
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*+*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**+*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***+*&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>0</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*+**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**+**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***+**&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;*+***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;**+***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>2</span>]
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;***+***&#39;</span>):
+        ints[index] <span style=color:#f92672>=</span> ints[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>2</span>]
+
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;@*&#39;</span>):
+        out <span style=color:#f92672>+=</span> chr(ord(<span style=color:#e6db74>&#39;@&#39;</span>) <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>0</span>])
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;@**&#39;</span>):
+        out <span style=color:#f92672>+=</span> chr(ord(<span style=color:#e6db74>&#39;@&#39;</span>) <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>1</span>])
+    <span style=color:#66d9ef>elif</span> (t <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;@***&#39;</span>):
+        out <span style=color:#f92672>+=</span> chr(ord(<span style=color:#e6db74>&#39;@&#39;</span>) <span style=color:#f92672>+</span> ints[<span style=color:#ae81ff>2</span>])
+    <span style=color:#66d9ef>else</span>:
+        <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;unhandled&#34;</span>, t
+
+<span style=color:#66d9ef>print</span> out
+
+</code></pre></div><p>The output was <code>IW@ILOVETAPEBAGEL@</code>.</p><p>Flag: <strong>IW{ILOVETAPEBAGEL}</strong></p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-rev80-kbeckmann/>https://blog.xil.se/posts/internetwache-2016-rev80-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/internetwache-2016-rev70-kbeckmann/ class=prev rel=prev title="InternetWache 2016 ServerfARM (Reverse 70) Writeup"><i class="iconfont icon-left"></i>&nbsp;InternetWache 2016 ServerfARM (Reverse 70) Writeup</a>
+<a href=https://blog.xil.se/posts/internetwache-2016-rev-80-arturo182/ class=next rel=next title="Internetwache CTF 2016 Eso Tape (Rev 80) Writeup">Internetwache CTF 2016 Eso Tape (Rev 80) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

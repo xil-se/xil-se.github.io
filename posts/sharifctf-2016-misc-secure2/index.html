@@ -1,0 +1,66 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/sharifctf-2016-pwn-login/><link rel=next href=https://blog.xil.se/posts/sharifctf-2016-misc-sound-rspkt/><link rel=canonical href=https://blog.xil.se/posts/sharifctf-2016-misc-secure2/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup | Blog</title><meta name=title content="SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup","headline":"SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup","description":"Problem  You should fix vulnerabilities of the given source code, WITHOUT changing its normal behaviour. Link\n Points: 300\nSolved by 83 team(s)\nSolution Just like the previous Sec-Coding 1, we get a link to a web UI where we should upload patched C\u002b\u002b code.\nWe are provided with windows C\u002b\u002b code that prints a repeated message based on the input.\nThe original code was pretty bad so I simply rewrote it completely and this solved all the security issues.","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-02-06 23:13:14 \u002b0100 \u002b0100","dateModified":"2016-02-06 23:13:14 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/sharifctf-2016-misc-secure2\/","wordCount":"255","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">SharifCTF 2016 Sec-Coding 2 (Misc 300) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-02-06 itemprop=datePublished>February 6, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>You should fix vulnerabilities of the given source code, WITHOUT changing its normal behaviour. Link</p></blockquote><p>Points: 300</p><p>Solved by 83 team(s)</p><h1 id=solution>Solution</h1><p>Just like the previous Sec-Coding 1, we get a link to a web UI where we should upload patched C++ code.</p><p>We are provided with windows C++ code that prints a repeated message based on the input.</p><p>The original code was pretty bad so I simply rewrote it completely and this solved all the security issues. There was a bug that I had to re-implement. If repeat count%10==0 the message should be blank.</p><p>The binary also had to scream if the input was invalid. Empty output was not accepted.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++>
+<span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;math.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;cstdlib&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;cstdio&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;cstring&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>void</span> <span style=color:#a6e22e>die</span>(<span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span><span style=color:#f92672>*</span> s) {
+	printf(<span style=color:#e6db74>&#34;%s&#34;</span>, s);
+	exit(<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>);
+}
+
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv)
+{
+	<span style=color:#75715e>// STRING ECHO
+</span><span style=color:#75715e></span>	<span style=color:#75715e>//
+</span><span style=color:#75715e></span>	<span style=color:#75715e>// Sample usage:
+</span><span style=color:#75715e></span>	<span style=color:#75715e>//   strecho repeat=4,str=pleaseechome
+</span><span style=color:#75715e></span>
+	<span style=color:#66d9ef>if</span> (argc <span style=color:#f92672>!=</span> <span style=color:#ae81ff>2</span>) die(<span style=color:#e6db74>&#34;1&#34;</span>);
+
+	<span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>line <span style=color:#f92672>=</span> argv[<span style=color:#ae81ff>1</span>];
+	<span style=color:#66d9ef>int</span> line_len <span style=color:#f92672>=</span> strlen(line);
+	<span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>line_end <span style=color:#f92672>=</span> line <span style=color:#f92672>+</span> line_len;
+
+	<span style=color:#66d9ef>if</span> (line_end <span style=color:#f92672>-</span> line <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>7</span>) die (<span style=color:#e6db74>&#34;2&#34;</span>);
+
+	<span style=color:#66d9ef>if</span> (strncmp(line, <span style=color:#e6db74>&#34;repeat=&#34;</span>, <span style=color:#ae81ff>7</span>)) die(<span style=color:#e6db74>&#34;3&#34;</span>);
+	line <span style=color:#f92672>+=</span> <span style=color:#ae81ff>7</span>;
+
+	<span style=color:#66d9ef>int</span> repeat <span style=color:#f92672>=</span> atoi(line);
+
+	<span style=color:#66d9ef>if</span> (repeat <span style=color:#f92672>&lt;=</span> <span style=color:#ae81ff>0</span>) die(<span style=color:#e6db74>&#34;4&#34;</span>);
+
+	<span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>comma <span style=color:#f92672>=</span> strchr(line, <span style=color:#e6db74>&#39;,&#39;</span>);
+	<span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>comma) die(<span style=color:#e6db74>&#34;5&#34;</span>);
+	line <span style=color:#f92672>=</span> comma <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>;
+	<span style=color:#66d9ef>if</span> (line <span style=color:#f92672>&gt;=</span> line_end) die(<span style=color:#e6db74>&#34;6&#34;</span>);
+
+	<span style=color:#66d9ef>if</span> (strncmp(line, <span style=color:#e6db74>&#34;str=&#34;</span>, <span style=color:#ae81ff>4</span>)) die(<span style=color:#e6db74>&#34;7&#34;</span>);
+	line <span style=color:#f92672>+=</span> <span style=color:#ae81ff>4</span>;
+
+	<span style=color:#66d9ef>if</span> (line <span style=color:#f92672>&gt;=</span> line_end) die(<span style=color:#e6db74>&#34;8&#34;</span>);
+
+	<span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>str <span style=color:#f92672>=</span> line;
+	<span style=color:#66d9ef>if</span> (repeat <span style=color:#f92672>%</span> <span style=color:#ae81ff>10</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) str <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>; <span style=color:#75715e>// intentional bug
+</span><span style=color:#75715e></span>
+	<span style=color:#66d9ef>int</span> i;
+	<span style=color:#66d9ef>for</span> (i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; i <span style=color:#f92672>&lt;</span> repeat; i<span style=color:#f92672>++</span>) {
+		printf(<span style=color:#e6db74>&#34;%s</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, str);
+	}
+
+	<span style=color:#66d9ef>return</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>14</span>;
+}
+</code></pre></div><p><em>Flag is 983027cec2889d128529c078eebb6471</em></p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/sharifctf-2016-misc-secure2/>https://blog.xil.se/posts/sharifctf-2016-misc-secure2/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/sharifctf-2016-pwn-login/ class=prev rel=prev title="SharifCTF 2016 Login to System (PWN 200) Writeup"><i class="iconfont icon-left"></i>&nbsp;SharifCTF 2016 Login to System (PWN 200) Writeup</a>
+<a href=https://blog.xil.se/posts/sharifctf-2016-misc-sound-rspkt/ class=next rel=next title="SharifCTF 2016 Hack By The Sound (Misc 200) Writeup">SharifCTF 2016 Hack By The Sound (Misc 200) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

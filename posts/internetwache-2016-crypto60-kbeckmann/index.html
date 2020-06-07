@@ -1,0 +1,70 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/sharifctf-2016-misc-sound-rspkt/><link rel=next href=https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>InternetWache 2016 Oh Bob! (Crypto 60) Writeup | Blog</title><meta name=title content="InternetWache 2016 Oh Bob! (Crypto 60) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"InternetWache 2016 Oh Bob! (Crypto 60) Writeup","headline":"InternetWache 2016 Oh Bob! (Crypto 60) Writeup","description":"Problem  Description: Alice wants to send Bob a confidential message. They both remember the crypto lecture about RSA. So Bob uses openssl to create key pairs. Finally, Alice encrypts the message with Bob\u0026rsquo;s public keys and sends it to Bob. Clever Eve was able to intercept it. Can you help Eve to decrypt the message?\n (crypto60, solved by 167)\nAttachment: crypto60.zip\nSolution The challenge zip file contains 3 public keys and a file with three encrypted strings.","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-02-20 23:11:07 \u002b0100 \u002b0100","dateModified":"2016-02-20 23:11:07 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-crypto60-kbeckmann\/","wordCount":"378","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">InternetWache 2016 Oh Bob! (Crypto 60) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-02-20 itemprop=datePublished>February 20, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: Alice wants to send Bob a confidential message. They both remember the crypto lecture about RSA. So Bob uses openssl to create key pairs. Finally, Alice encrypts the message with Bob&rsquo;s public keys and sends it to Bob. Clever Eve was able to intercept it. Can you help Eve to decrypt the message?</p></blockquote><p>(crypto60, solved by 167)</p><p>Attachment: crypto60.zip</p><h1 id=solution>Solution</h1><p>The challenge zip file contains 3 public keys and a file with three encrypted strings.</p><p>The public keys can be investigated using openssl:</p><pre><code>openssl rsa -in  task/bob3.pub -pubin -text -modulus
+Public-Key: (228 bit)
+Modulus:
+    0c:5b:69:e1:97:9e:54:1f:85:da:cd:e2:aa:14:d2:
+    72:2a:84:6f:41:b3:db:83:e6:67:e3:b3:d1:1d
+Exponent: 65537 (0x10001)
+Modulus=C5B69E1979E541F85DACDE2AA14D2722A846F41B3DB83E667E3B3D11D
+</code></pre><p>Note that the key size is 228 bits, which is short. We can crack them.</p><p>Using the tool <a href=https://sourceforge.net/projects/yafu/>yafu</a> we can factor the three keys very quickly on a pretty standard gaming machine. Took me only a couple of seconds to compute.</p><pre><code>$ yafu
+factor(0xC5B69E1979E541F85DACDE2AA14D2722A846F41B3DB83E667E3B3D11D)
+p = 19193025210159847056853811703017693
+q = 17357677172158834256725194757225793
+</code></pre><p>Now we need to use the factors p and q to decrypt the message. Fortunately I was lazy and used google to find a very nice <a href=https://github.com/p4-team/ctf/tree/master/2015-09-26-trendmicro/rsa>writeup</a> that helped me a lot.</p><p>The following code decrypts the messages:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> Crypto.Util.number <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+<span style=color:#f92672>import</span> base64
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>egcd</span>(a, b):
+    u, u1 <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>0</span>
+    v, v1 <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>
+    <span style=color:#66d9ef>while</span> b:
+        q <span style=color:#f92672>=</span> a <span style=color:#f92672>//</span> b
+        u, u1 <span style=color:#f92672>=</span> u1, u <span style=color:#f92672>-</span> q <span style=color:#f92672>*</span> u1
+        v, v1 <span style=color:#f92672>=</span> v1, v <span style=color:#f92672>-</span> q <span style=color:#f92672>*</span> v1
+        a, b <span style=color:#f92672>=</span> b, a <span style=color:#f92672>-</span> q <span style=color:#f92672>*</span> b
+    <span style=color:#66d9ef>return</span> a, u, v
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>decrypt</span>(p, q, e, n, ct):
+    phi <span style=color:#f92672>=</span> (p <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>) <span style=color:#f92672>*</span> (q <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>)
+    gcd, a, b <span style=color:#f92672>=</span> egcd(e, phi)
+    d <span style=color:#f92672>=</span> a
+    <span style=color:#66d9ef>if</span> d <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>:
+        d <span style=color:#f92672>+=</span> phi
+    pt <span style=color:#f92672>=</span> pow(ct, d, n)
+    <span style=color:#66d9ef>print</span>(long_to_bytes(pt))
+
+m1 <span style=color:#f92672>=</span> base64<span style=color:#f92672>.</span>b64decode(<span style=color:#e6db74>&#39;DK9dt2MTybMqRz/N2RUMq2qauvqFIOnQ89mLjXY=&#39;</span>)
+m2 <span style=color:#f92672>=</span> base64<span style=color:#f92672>.</span>b64decode(<span style=color:#e6db74>&#39;AK/WPYsK5ECFsupuW98bCFKYUApgrQ6LTcm3KxY=&#39;</span>)
+m3 <span style=color:#f92672>=</span> base64<span style=color:#f92672>.</span>b64decode(<span style=color:#e6db74>&#39;CiLSeTUCCKkyNf8NVnifGKKS2FJ7VnWKnEdygXY=&#39;</span>)
+
+p <span style=color:#f92672>=</span> <span style=color:#ae81ff>20016431322579245244930631426505729</span>
+q <span style=color:#f92672>=</span> <span style=color:#ae81ff>17963604736595708916714953362445519</span>
+e <span style=color:#f92672>=</span> <span style=color:#ae81ff>65537</span>
+n <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xD564B978F9D233504958EED8B744373281ED1418B29F1ECFA8093D8CF</span>
+decrypt(p, q, e, n, bytes_to_long(m1))
+
+p <span style=color:#f92672>=</span> <span style=color:#ae81ff>16549930833331357120312254608496323</span>
+q <span style=color:#f92672>=</span> <span style=color:#ae81ff>16514150337068782027309734859141427</span>
+e <span style=color:#f92672>=</span> <span style=color:#ae81ff>65537</span>
+n <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xA23370E7D0FB00232164AC6D642840FC54E9202433F927A60EB5ADBD9</span>
+decrypt(p, q, e, n, bytes_to_long(m3))
+
+p <span style=color:#f92672>=</span> <span style=color:#ae81ff>19193025210159847056853811703017693</span>
+q <span style=color:#f92672>=</span> <span style=color:#ae81ff>17357677172158834256725194757225793</span>
+e <span style=color:#f92672>=</span> <span style=color:#ae81ff>65537</span>
+n <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xC5B69E1979E541F85DACDE2AA14D2722A846F41B3DB83E667E3B3D11D</span>
+decrypt(p, q, e, n, bytes_to_long(m2))
+</code></pre></div><pre><code>$ python crack.py
+&lt;junk&gt;IW{WEAK_R
+&lt;junk&gt;SA_K3YS_4R
+&lt;junk&gt;3_SO_BAD!}
+</code></pre><p>Concatenating the printable strings, we get the flag: <strong>IW{WEAK_RSA_K3YS_4R3_SO_BAD!}</strong>.</p><p>I would not have been able to solve this without the help from <a href=https://sourceforge.net/projects/yafu/>yafu</a> and this fantastic <a href=https://github.com/p4-team/ctf/tree/master/2015-09-26-trendmicro/rsa>writeup</a>.</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/>https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/sharifctf-2016-misc-sound-rspkt/ class=prev rel=prev title="SharifCTF 2016 Hack By The Sound (Misc 200) Writeup"><i class="iconfont icon-left"></i>&nbsp;SharifCTF 2016 Hack By The Sound (Misc 200) Writeup</a>
+<a href=https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/ class=next rel=next title="InternetWache 2016 A numbers game II (Crypto 70) Writeup">InternetWache 2016 A numbers game II (Crypto 70) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

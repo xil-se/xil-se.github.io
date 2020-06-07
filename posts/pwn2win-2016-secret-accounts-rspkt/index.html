@@ -1,0 +1,86 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/pwn2win-2016-dump-rspkt/><link rel=next href=https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/><link rel=canonical href=https://blog.xil.se/posts/pwn2win-2016-secret-accounts-rspkt/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Pwn2Win CTF 2016 Secret Accounts (Py 80) Writeup | Blog</title><meta name=title content="Pwn2Win CTF 2016 Secret Accounts (Py 80) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Pwn2Win CTF 2016 Secret Accounts (Py 80) Writeup","headline":"Pwn2Win CTF 2016 Secret Accounts (Py 80) Writeup","description":"Problem  Description: Through many months of sniffing, we discovered a server running a software which the Club uses to manage information about secret bank accounts abroad. We even obtained its source code. We need to obtain access to the system in order to discover the real name of the owner of the account possessing the greater amount of money, in which bank it is, and the real amount. As you might expect, it seems that the Club has hunkered down to assert only authorized people, which really know what they are doing, are able to operate this system and to interpret information provided by it.","inLanguage":"en-us","author":"rspkt","creator":"rspkt","publisher":"rspkt","accountablePerson":"rspkt","copyrightHolder":"rspkt","copyrightYear":"2016","datePublished":"2016-03-28 11:22:00 \u002b0100 \u002b0100","dateModified":"2016-03-28 11:22:00 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/pwn2win-2016-secret-accounts-rspkt\/","wordCount":"577","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Pwn2Win CTF 2016 Secret Accounts (Py 80) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/rspkt rel=author>rspkt</a> with ♥
+<span class=post-time>on <time datetime=2016-03-28 itemprop=datePublished>March 28, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: Through many months of sniffing, we discovered a server running
+a software which the Club uses to manage information about secret bank accounts
+abroad. We even obtained its source code. We need to obtain access to the
+system in order to discover the real name of the owner of the account
+possessing the greater amount of money, in which bank it is, and the real
+amount. As you might expect, it seems that the Club has hunkered down to assert
+only authorized people, which really know what they are doing, are able to
+operate this system and to interpret information provided by it. Rumors exist
+that the Mentor himself manages it, as amazing as it may seem (he is old but
+not deciduous!).</p></blockquote><p>You will need good “python-fu” to win this challenge!</p><p>Submit the flag in the following format: CTF-BR{info1_info2_info3}.</p><p>Hint: Who is Fideleeto (Cuba!) in real life? Take this into account. :)</p><h1 id=solution>Solution</h1><p>The provided Python file was somewhat obfuscated with lots of unconventional
+things like octal numbers, unnecessary arithmetics and so on. The first part of
+the challenge was getting past the intial password prompt. The password check
+algorithm was very convoluted, so we started off by translating octal to
+to decimal, and simplified it:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>name<span style=color:#f92672>=</span>raw_input(<span style=color:#e6db74>&#34;Login name: &#34;</span>)
+master<span style=color:#f92672>=</span>file(<span style=color:#e6db74>&#34;master.txt&#34;</span>)<span style=color:#f92672>.</span>readlines()
+pwdmaster<span style=color:#f92672>=</span>file(<span style=color:#e6db74>&#34;passwd.txt&#34;</span>)<span style=color:#f92672>.</span>readlines()
+master<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;&#34;</span><span style=color:#f92672>.</span>join(master)<span style=color:#f92672>.</span>strip(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>)<span style=color:#f92672>+</span><span style=color:#e6db74>&#34;z&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>72</span><span style=color:#f92672>+</span><span style=color:#e6db74>&#34;|&#34;</span><span style=color:#f92672>+</span><span style=color:#e6db74>&#34;Z&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>15</span>
+birthyear<span style=color:#f92672>=</span>master[<span style=color:#ae81ff>9</span>:<span style=color:#ae81ff>13</span>]
+status<span style=color:#f92672>=</span>bool()
+
+<span style=color:#66d9ef>if</span> ((name[:<span style=color:#ae81ff>9</span>] <span style=color:#f92672>==</span> master[:<span style=color:#ae81ff>9</span>]) <span style=color:#f92672>and</span>
+	(name[<span style=color:#ae81ff>9</span>:<span style=color:#ae81ff>13</span>] <span style=color:#f92672>==</span> master[<span style=color:#ae81ff>9</span>:<span style=color:#ae81ff>13</span>]) <span style=color:#f92672>and</span>
+	(len(name[<span style=color:#ae81ff>13</span>:]) <span style=color:#f92672>==</span> len(master[<span style=color:#ae81ff>13</span>:]))
+	<span style=color:#f92672>and</span> (name[<span style=color:#ae81ff>13</span>:] <span style=color:#f92672>&gt;</span> master[<span style=color:#ae81ff>13</span>:])) <span style=color:#f92672>==</span> False:
+	status <span style=color:#f92672>=</span> False
+<span style=color:#66d9ef>else</span>:
+	status <span style=color:#f92672>=</span> True
+</code></pre></div><p>So the password is 9 characters, appended by a birthyear and lots and lots of
+lowercase and uppercase <code>Z</code>. There was a hint in the description referencing
+Cuba. We used that to figure out the birthyear as the birthyear of Cuban leader
+Fidel Castro. Since the assignment is following the theme of the CTF, the first
+nine characters are likely Fideleeto. The remaining part of the password was
+easy to construct. Just add the <code>Z</code>, and make sure the string input string is
+&ldquo;larger&rdquo; than that in the <code>master</code> variable (we did this by changing one of the
+uppercase <code>Z</code> to lowercase).</p><p>Once we got past the password, we were shown a prompt with different
+account-related actions:</p><pre><code>Available Options:
+
+1 - View Owners of Accounts
+2 - View Banks of Accounts
+3 - Modify Sum
+4 - Exit
+</code></pre><p>Simply entering the number here is not sufficient, since the input numbers are
+altered in the function <code>toption(opt)</code>. To figure out what input that gave what
+option value, we just bruteforced it. We found the following mappings:</p><pre><code>toption(110) = 1
+toption(132) = 2
+toption(144) = 3
+toption(162) = 4
+</code></pre><p>So now that we can provide the menu with real options, we need to enter another
+password. Looking at the code, we can see that things get interesting here.
+They are using the <code>input()</code> function. The Python documentation states this
+this is <code>equivalent to eval(raw_input(prompt))</code>. That sounds very dangerous.
+Let&rsquo;s see if it can give us shell ;)</p><p>We enter the following in the input prompt: <code>os.system('/bin/sh')</code>, and we&rsquo;re
+provided a shell as expected. From there we can read the <code>infos</code> file,
+containing bank account information:</p><pre><code>{&quot;Eduardo Cunha&quot; :
+	[&quot;Credit Suisse&quot;,&quot;5002005&quot;],
+
+&quot;Dilma Roussef&quot; :
+	[&quot;Coop Bank&quot;,&quot;22582599&quot;],
+
+&quot;Lul4 M0lusc0&quot; :
+	[&quot;Compagnie Bancaire Helvetique&quot;,&quot;25987369&quot;],
+
+&quot;Delubio Soares&quot; :
+	[&quot;Compagnie Bancaire Helvetique&quot;,&quot;2100125&quot;],
+
+&quot;Delcidio Amaral&quot; :
+	[&quot;Graubundner Kantonalbank&quot;,&quot;1780695&quot;],
+
+&quot;Jose Dirceu&quot; :
+	[&quot;WIR Bank&quot;,&quot;8528314&quot;],
+
+&quot;Renan Calheiros&quot; :
+	[&quot;Julius Baer&quot;, &quot;11254255&quot;]}
+</code></pre><p>Here we can see that Lul4 M0lusc0 has the highest balance, so we enter his
+information into the flag format, and get our points.</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/pwn2win-2016-secret-accounts-rspkt/>https://blog.xil.se/posts/pwn2win-2016-secret-accounts-rspkt/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/pwn2win-2016-dump-rspkt/ class=prev rel=prev title="Pwn2Win CTF 2016 Dump (Forensics 50) Writeup"><i class="iconfont icon-left"></i>&nbsp;Pwn2Win CTF 2016 Dump (Forensics 50) Writeup</a>
+<a href=https://blog.xil.se/posts/projects/rgbpad/rgbpad-1/ class=next rel=next title="RGBPad project">RGBPad project&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

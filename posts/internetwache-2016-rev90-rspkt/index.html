@@ -1,0 +1,266 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/internetwache-2016-exp-90-arturo182/><link rel=next href=https://blog.xil.se/posts/internetwache-2016-web-50-simonvik/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-rev90-rspkt/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Internetwache CTF 2016 The Cube (Rev 90) Writeup | Blog</title><meta name=title content="Internetwache CTF 2016 The Cube (Rev 90) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Internetwache CTF 2016 The Cube (Rev 90) Writeup","headline":"Internetwache CTF 2016 The Cube (Rev 90) Writeup","description":"Problem  Description: I really like Rubik\u0026rsquo;s Cubes, so I created a challenge for you. I put the flag on the white tiles and scrambled the cube. Once you solved the cube, you\u0026rsquo;ll know my secret.\n (rev90, solved by 232)\nAttachment: rev90.zip\nSolution In this task we were given a text-file containing the scrambling of a Rubik\u0026rsquo;s cube, as well as the different sides of the cube before it was scrambled.","inLanguage":"en-us","author":"rspkt","creator":"rspkt","publisher":"rspkt","accountablePerson":"rspkt","copyrightHolder":"rspkt","copyrightYear":"2016","datePublished":"2016-02-21 18:18:38 \u002b0100 \u002b0100","dateModified":"2016-02-21 18:18:38 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-rev90-rspkt\/","wordCount":"1116","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Internetwache CTF 2016 The Cube (Rev 90) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/rspkt rel=author>rspkt</a> with ♥
+<span class=post-time>on <time datetime=2016-02-21 itemprop=datePublished>February 21, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: I really like Rubik&rsquo;s Cubes, so I created a challenge for you. I put the flag on the white tiles and scrambled the cube. Once you solved the cube, you&rsquo;ll know my secret.</p></blockquote><p>(rev90, solved by 232)</p><p>Attachment: rev90.zip</p><h1 id=solution>Solution</h1><p>In this task we were given a text-file containing the scrambling of a Rubik&rsquo;s
+cube, as well as the different sides of the cube before it was scrambled.</p><pre><code>Scrambling:
+F' D' U' L' U' F2 B2 D2 F' U D2 B' U' B2 R2 D2 B' R' U B2 L U R' U' L'
+
+
+White side:
+-------
+|{|3| |
+| |D|R|
+| |W| |
+-------
+
+Orange side:
+-------
+| | | |
+| | | |
+| | | |
+-------
+
+Yellow side:
+-------
+|}| | |
+|3| | |
+| | | |
+-------
+
+
+Red side:
+-------
+|I| | |
+| | | |
+| | |C|
+-------
+
+Green side:
+-------
+| | | |
+| | | |
+| | | |
+-------
+
+Blue side:
+-------
+| | | |
+| | | |
+| | | |
+-------
+</code></pre><p>First observation is that the flag is five characters long, since there are
+nine characters spread out over the cube, and of these, four are <code>IW{}</code>.
+This makes it really easy to brute-force this challenge, since there are only
+120 possible permutations. However, brute-forcing is no fun.</p><p>Another way would be to solve this using a physical Rubik&rsquo;s cube. In the lack
+of one of those, we decided to go with the programmatic solution.</p><p>The implementation is pretty straight forward. First we define a representation
+of the cube, which naturally is a 6x3x3 array (or list). We define the six
+different rotations in different functions. Some valuable observations where are:</p><ul><li>Each rotation of a side affects the four adjacent sides</li><li>The meaning of each rotation depends on the starting state of the cube</li><li>The scrambling needs to be done in reverse in order to de-scramble the cube</li><li>Counter-clockwise rotations (marked with prim-sign) are equivalent to three
+clockwise rotations, and double rotations are reversed with double rotations</li></ul><p>Internetwache were kind enough to supply us with the starting state
+<a href=https://twitter.com/internetwache/status/701062084969283585>in a tweet</a>.
+The starting state of the cube was:</p><p>Front: green
+Right: red
+Up: white
+Back: blue
+Left: orange
+Down: yellow</p><p>Having implemented all rotations, and knowing the starting state, we can solve
+the cube. Using the provided script, the following output was given:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+
+[<span style=color:#e6db74>&#39;I&#39;</span>, <span style=color:#e6db74>&#39;W&#39;</span>, <span style=color:#e6db74>&#39;{&#39;</span>]
+[<span style=color:#e6db74>&#39;3&#39;</span>, <span style=color:#e6db74>&#39;D&#39;</span>, <span style=color:#e6db74>&#39;R&#39;</span>]
+[<span style=color:#e6db74>&#39;C&#39;</span>, <span style=color:#e6db74>&#39;3&#39;</span>, <span style=color:#e6db74>&#39;}&#39;</span>]
+
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+[<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>]
+</code></pre></div><p>This gives us the flag, IW{3DRC3}.</p><p>Code</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e># The cube</span>
+sides <span style=color:#f92672>=</span> {
+    <span style=color:#e6db74>&#39;W&#39;</span>: [
+        [<span style=color:#e6db74>&#39;{&#39;</span>, <span style=color:#e6db74>&#39;3&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39;D&#39;</span>, <span style=color:#e6db74>&#39;R&#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39;W&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+    ],
+
+    <span style=color:#e6db74>&#39;O&#39;</span>: [
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+    ],
+
+    <span style=color:#e6db74>&#39;Y&#39;</span>: [
+        [<span style=color:#e6db74>&#39;}&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39;3&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+    ],
+
+    <span style=color:#e6db74>&#39;R&#39;</span>: [
+        [<span style=color:#e6db74>&#39;I&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39;C&#39;</span>],
+    ],
+
+    <span style=color:#e6db74>&#39;G&#39;</span>: [
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+    ],
+
+    <span style=color:#e6db74>&#39;B&#39;</span>: [
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+        [<span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>],
+    ],
+}
+
+
+<span style=color:#75715e># This rotates all squares on one side</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>rot</span>(s):
+    <span style=color:#66d9ef>return</span> [[s[<span style=color:#ae81ff>2</span><span style=color:#f92672>-</span>i][j] <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>3</span>)] <span style=color:#66d9ef>for</span> j <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>3</span>)]
+
+
+<span style=color:#75715e># These functions rotate adjacent sides</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>F</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>])
+
+    c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>0</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>R</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>])
+
+    c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>1</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>U</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>])
+
+    c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>2</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>B</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>])
+
+    c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>3</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>3</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>L</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>])
+
+    c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>5</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>]
+    c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>4</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>D</span>(c):
+    tmp <span style=color:#f92672>=</span> (c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>])
+
+    c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>0</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>4</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>3</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>]
+    c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>0</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>1</span>], c[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>][<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> tmp
+
+    c[<span style=color:#ae81ff>5</span>] <span style=color:#f92672>=</span> rot(c[<span style=color:#ae81ff>5</span>])
+    <span style=color:#66d9ef>return</span> c
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>print_cube</span>(c):
+    <span style=color:#66d9ef>for</span> side <span style=color:#f92672>in</span> c:
+        <span style=color:#66d9ef>for</span> row <span style=color:#f92672>in</span> side:
+            <span style=color:#66d9ef>print</span> row
+
+        <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;&#34;</span>
+
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>solve</span>(c):
+    <span style=color:#75715e># Original:</span>
+    <span style=color:#75715e># F&#39; D&#39; U&#39; L&#39; U&#39; F2 B2 D2 F&#39; U D2 B&#39; U&#39; B2 R2 D2 B&#39; R&#39; U B2 L U R&#39; U&#39; L&#39;</span>
+
+    <span style=color:#75715e># Reverse:</span>
+    <span style=color:#75715e># L U R U&#39; L&#39; B2 U&#39; R B D2 R2 B2 U B D2 U&#39; F D2 B2 F2 U L U D F</span>
+
+    c <span style=color:#f92672>=</span> L(c)        <span style=color:#75715e># L</span>
+    c <span style=color:#f92672>=</span> U(c)        <span style=color:#75715e># U</span>
+    c <span style=color:#f92672>=</span> R(c)        <span style=color:#75715e># R</span>
+    c <span style=color:#f92672>=</span> U(U(U(c)))  <span style=color:#75715e># U&#39;</span>
+    c <span style=color:#f92672>=</span> L(L(L(c)))  <span style=color:#75715e># L&#39;</span>
+    c <span style=color:#f92672>=</span> B(B(c))     <span style=color:#75715e># B2</span>
+    c <span style=color:#f92672>=</span> U(U(U(c)))  <span style=color:#75715e># U&#39;</span>
+    c <span style=color:#f92672>=</span> R(c)        <span style=color:#75715e># R</span>
+    c <span style=color:#f92672>=</span> B(c)        <span style=color:#75715e># B</span>
+    c <span style=color:#f92672>=</span> D(D(c))     <span style=color:#75715e># D2</span>
+    c <span style=color:#f92672>=</span> R(R(c))     <span style=color:#75715e># R2</span>
+    c <span style=color:#f92672>=</span> B(B(c))     <span style=color:#75715e># B2</span>
+    c <span style=color:#f92672>=</span> U(c)        <span style=color:#75715e># U</span>
+    c <span style=color:#f92672>=</span> B(c)        <span style=color:#75715e># B</span>
+    c <span style=color:#f92672>=</span> D(D(c))     <span style=color:#75715e># D2</span>
+    c <span style=color:#f92672>=</span> U(U(U(c)))  <span style=color:#75715e># U&#39;</span>
+    c <span style=color:#f92672>=</span> F(c)        <span style=color:#75715e># F</span>
+    c <span style=color:#f92672>=</span> D(D(c))     <span style=color:#75715e># D2</span>
+    c <span style=color:#f92672>=</span> B(B(c))     <span style=color:#75715e># B2</span>
+    c <span style=color:#f92672>=</span> F(F(c))     <span style=color:#75715e># F2</span>
+    c <span style=color:#f92672>=</span> U(c)        <span style=color:#75715e># U</span>
+    c <span style=color:#f92672>=</span> L(c)        <span style=color:#75715e># L</span>
+    c <span style=color:#f92672>=</span> U(c)        <span style=color:#75715e># U</span>
+    c <span style=color:#f92672>=</span> D(c)        <span style=color:#75715e># D</span>
+    c <span style=color:#f92672>=</span> F(c)        <span style=color:#75715e># F</span>
+
+
+<span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+    <span style=color:#75715e># Color of sides in format:</span>
+    <span style=color:#75715e># Front, right, up, back, left, down</span>
+    starting_pos <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;GRWBOY&#34;</span>
+    c <span style=color:#f92672>=</span> []
+    <span style=color:#66d9ef>for</span> ch <span style=color:#f92672>in</span> starting_pos:
+        c<span style=color:#f92672>.</span>append(sides[ch])
+    solve(c)
+    print_cube(c)
+</code></pre></div></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-rev90-rspkt/>https://blog.xil.se/posts/internetwache-2016-rev90-rspkt/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/internetwache-2016-exp-90-arturo182/ class=prev rel=prev title="Internetwache CTF 2016 Sh-ock (Exp 90) Writeup"><i class="iconfont icon-left"></i>&nbsp;Internetwache CTF 2016 Sh-ock (Exp 90) Writeup</a>
+<a href=https://blog.xil.se/posts/internetwache-2016-web-50-simonvik/ class=next rel=next title="InternetWache 2016 Mess of Hash (Web 50)">InternetWache 2016 Mess of Hash (Web 50) &nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

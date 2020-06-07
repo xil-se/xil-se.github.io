@@ -1,0 +1,101 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/sharifctf-2016-forensics-fashion-flag-arturo182/><link rel=next href=https://blog.xil.se/posts/sharifctf-2016-re-dmd-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/sharifctf-2016-forensics-blocks-arturo182/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>SharifCTF 2016 Blocks (Forensics 400) Writeup | Blog</title><meta name=title content="SharifCTF 2016 Blocks (Forensics 400) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"SharifCTF 2016 Blocks (Forensics 400) Writeup","headline":"SharifCTF 2016 Blocks (Forensics 400) Writeup","description":"Problem  I recovered as much data as I could. Can you recover the flag?\n Attachment: A data blob\nSolution To start with, file tells us nothing about the file, so we pop it into a hex editor and we can see familiar things:\n...snip... 0000230: 8114 0407 1715 1501 820b 7461 626c 6564 ..........tabled 0000240: 6174 6164 6174 6105 4352 4541 5445 2054 atadata.CREATE T 0000250: 4142 4c45 2022 6461 7461 2220 280a 0960 ABLE \u0026quot;data\u0026quot; (.","inLanguage":"en-us","author":"arturo182","creator":"arturo182","publisher":"arturo182","accountablePerson":"arturo182","copyrightHolder":"arturo182","copyrightYear":"2016","datePublished":"2016-02-06 20:47:49 \u002b0100 \u002b0100","dateModified":"2016-02-06 20:47:49 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/sharifctf-2016-forensics-blocks-arturo182\/","wordCount":"650","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">SharifCTF 2016 Blocks (Forensics 400) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/arturo182 rel=author>arturo182</a> with ♥
+<span class=post-time>on <time datetime=2016-02-06 itemprop=datePublished>February 6, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>I recovered as much data as I could. Can you recover the flag?</p></blockquote><p>Attachment: A data blob</p><h1 id=solution>Solution</h1><p>To start with, <code>file</code> tells us nothing about the file, so we pop it into a hex editor and we can see familiar things:</p><pre><code class=language-none data-lang=none>...snip...
+0000230: 8114 0407 1715 1501 820b 7461 626c 6564  ..........tabled
+0000240: 6174 6164 6174 6105 4352 4541 5445 2054  atadata.CREATE T
+0000250: 4142 4c45 2022 6461 7461 2220 280a 0960  ABLE &quot;data&quot; (..`
+0000260: 4944 6009 494e 5445 4745 5220 4e4f 5420  ID`.INTEGER NOT
+0000270: 4e55 4c4c 2050 5249 4d41 5259 204b 4559  NULL PRIMARY KEY
+0000280: 2041 5554 4f49 4e43 5245 4d45 4e54 2055   AUTOINCREMENT U
+0000290: 4e49 5155 452c 0a09 6044 6174 6160 0942  NIQUE,..`Data`.B
+...snip...
+</code></pre><p>So, it seems it&rsquo;s a SQLite database, but the header magic (section 1.2 <a href=https://www.sqlite.org/fileformat2.html>here</a>) is missing, let&rsquo;s look closely.</p><p>A proper file:</p><pre><code class=language-none data-lang=none>0000000: 5351 4c69 7465 2066 6f72 6d61 7420 3300  SQLite format 3.
+0000010: 0400 0101 0040 2020 0000 000b 0000 000b  .....@  ........
+0000020: 0000 0000 0000 0000 0000 0002 0000 0004  ................
+</code></pre><p>Our file:</p><pre><code class=language-none data-lang=none>0000000: 2033 0004 0001 0100 4020 2000 0000 0b00   3......@  .....
+0000010: 0000 0b00 0000 0000 0000 0000 0000 0200  ................
+0000020: 0000 0400 0000 0000 0000 0000 0000 0100  ................
+</code></pre><p>Seems that &ldquo;SQLite format " is missing, we add it and get a working database file!<br>Now let&rsquo;s check the contents:</p><pre><code class=language-none data-lang=none>sqlite&gt; .schema
+CREATE TABLE `category` (
+        `ID` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        `Cat` TEXT NOT NULL
+);
+CREATE TABLE &quot;data&quot; (
+        `ID` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        `Data` BLOB NOT NULL,
+        `Cat` INTEGER NOT NULL
+);
+
+sqlite&gt; SELECT * FROM category;
+1|CHRM
+2|IDAT
+3|ICCP
+4|IHDR
+5|TEXT
+6|TIME
+7|PLTE
+8|TRNS
+
+sqlite&gt; SELECT ID, length(hex(Data))/2, Cat FROM data;
+1|265|2
+2|265|2
+3|265|2
+4|265|2
+5|265|2
+6|768|7
+7|13|4
+8|265|2
+9|265|2
+10|255|2
+11|265|2
+12|2|8
+13|265|2
+14|265|2
+</code></pre><p>So it looks like we have a make-your-own-PNG kit, categorised chunks stored as BLOBs. After looking around more, we could say the following:</p><ul><li>We have one IHDR chunk</li><li>We have one PLTE chunk</li><li>We have one tRNS chunk</li><li>We have 11 IDAT chunks</li></ul><p>We&rsquo;re in luck, that&rsquo;s just enough to make a PNG!</p><p>I have to admit, this challenge, took me a long time to figure out, mostly because I had no idea what order the IDAT chunks should be, maybe there is some way to determine that based on their header flags, but I could not have get it working, so in the end, a good old try and error saved the day.</p><p>Before the final code, let&rsquo;s stop a second and talk about the PNG format, because it&rsquo;s a pretty neat one.<br>A PNG file consists of parts called chunks, each of which has to be stored like so:</p><ul><li>Length: A four-byte unsigned integer, specifies the size of the Data field</li><li>Type: Four byte ASCII sequence</li><li>Data: Whatever it needs to be, depends on the Type</li><li>CRC: A four byte integer, calculated from Type and Data fields using the crc32 hash function</li></ul><p>With that information the code should be easy to understand:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> sqlite3
+<span style=color:#f92672>import</span> struct
+<span style=color:#f92672>import</span> zlib
+<span style=color:#f92672>import</span> struct
+ 
+db <span style=color:#f92672>=</span> sqlite3<span style=color:#f92672>.</span>connect(<span style=color:#e6db74>&#39;data2&#39;</span>)
+ 
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_chunk</span>(typ, data):
+    ret <span style=color:#f92672>=</span> struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#39;&gt;l&#39;</span>, len(data))
+    ret <span style=color:#f92672>=</span> ret <span style=color:#f92672>+</span> typ
+    ret <span style=color:#f92672>=</span> ret <span style=color:#f92672>+</span> data
+    ret <span style=color:#f92672>=</span> ret <span style=color:#f92672>+</span> struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#39;&gt;l&#39;</span>, zlib<span style=color:#f92672>.</span>crc32(typ <span style=color:#f92672>+</span> data))
+    <span style=color:#66d9ef>return</span> ret
+ 
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fetch_one</span>(cat):
+    q <span style=color:#f92672>=</span> db<span style=color:#f92672>.</span>execute(<span style=color:#e6db74>&#39;SELECT Data from data WHERE cat=?&#39;</span>, [cat])
+    r <span style=color:#f92672>=</span> q<span style=color:#f92672>.</span>fetchone()
+    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join([str(x) <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> r[<span style=color:#ae81ff>0</span>]])
+ 
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fetch_idat</span>(i):
+    q <span style=color:#f92672>=</span> db<span style=color:#f92672>.</span>execute(<span style=color:#e6db74>&#39;SELECT Data from data WHERE ID=?&#39;</span>, [i])
+    r <span style=color:#f92672>=</span> q<span style=color:#f92672>.</span>fetchone()
+    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join([str(x) <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> r[<span style=color:#ae81ff>0</span>]])
+ 
+png <span style=color:#f92672>=</span> open(<span style=color:#e6db74>&#39;flag.png&#39;</span>, <span style=color:#e6db74>&#39;wb&#39;</span>)
+ 
+png<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\x89\x50\x4E\x47\x0D\x0A\x1A\x0A</span><span style=color:#e6db74>&#39;</span>)  <span style=color:#75715e># PNG magic</span>
+png<span style=color:#f92672>.</span>write(get_chunk(<span style=color:#e6db74>&#39;IHDR&#39;</span>, fetch_one(<span style=color:#ae81ff>4</span>)))
+png<span style=color:#f92672>.</span>write(get_chunk(<span style=color:#e6db74>&#39;PLTE&#39;</span>, fetch_one(<span style=color:#ae81ff>7</span>)))
+png<span style=color:#f92672>.</span>write(get_chunk(<span style=color:#e6db74>&#39;tRNS&#39;</span>, fetch_one(<span style=color:#ae81ff>8</span>)))
+ 
+dat <span style=color:#f92672>=</span> [<span style=color:#ae81ff>4</span>, <span style=color:#ae81ff>11</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>14</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>9</span>, <span style=color:#ae81ff>8</span>, <span style=color:#ae81ff>5</span>, <span style=color:#ae81ff>13</span>, <span style=color:#ae81ff>10</span>]
+<span style=color:#66d9ef>for</span> d <span style=color:#f92672>in</span> dat:
+    png<span style=color:#f92672>.</span>write(get_chunk(<span style=color:#e6db74>&#39;IDAT&#39;</span>, fetch_idat(d)))
+ 
+png<span style=color:#f92672>.</span>write(get_chunk(<span style=color:#e6db74>&#39;IEND&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>))
+ 
+png<span style=color:#f92672>.</span>close()
+</code></pre></div><p>This produces a 600x600 PNG file with the flag mirrored (because what kind of forensic challenge would it be if there was no image mirroring?).</p><p>Flag: SharifCTF{A3FBFC944D5CA155B0C04C97823986B6}</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/sharifctf-2016-forensics-blocks-arturo182/>https://blog.xil.se/posts/sharifctf-2016-forensics-blocks-arturo182/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/sharifctf-2016-forensics-fashion-flag-arturo182/ class=prev rel=prev title="SharifCTF 2016 We lost the Fashion Flag! (Forensics 100) Writeup"><i class="iconfont icon-left"></i>&nbsp;SharifCTF 2016 We lost the Fashion Flag! (Forensics 100) Writeup</a>
+<a href=https://blog.xil.se/posts/sharifctf-2016-re-dmd-kbeckmann/ class=next rel=next title="SharifCTF 2016 dMd (RE 50) Writeup">SharifCTF 2016 dMd (RE 50) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

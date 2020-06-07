@@ -1,0 +1,60 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/internetwache-2016-web-50-simonvik/><link rel=next href=https://blog.xil.se/posts/bkp-2016-jit-re-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-misc-80-simonvik/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>InternetWache 2016 404 Flag not found (misc 80) | Blog</title><meta name=title content="InternetWache 2016 404 Flag not found (misc 80)  | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"InternetWache 2016 404 Flag not found (misc 80) ","headline":"InternetWache 2016 404 Flag not found (misc 80) ","description":"Problem  Description: I tried to download the flag, but somehow received only 404 errors :( Hint: The last step is to look for flag pattern.\n (misc80, solved by 292)\nAttachment: misc80.zip\nSolution We are provided with a pcapng file, after opening the file in wireshark we can see that it contains some HTTP Requests (without answers) and some DNS lookups.\nAfter looking at it for a while we noticed that the hostnames looked interesting, the first part of the hostname looked like hex-encoded ascii.","inLanguage":"en-us","author":"simonvik","creator":"simonvik","publisher":"simonvik","accountablePerson":"simonvik","copyrightHolder":"simonvik","copyrightYear":"2016","datePublished":"2016-02-21 20:00:12 \u002b0100 \u002b0100","dateModified":"2016-02-21 20:00:12 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-misc-80-simonvik\/","wordCount":"324","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">InternetWache 2016 404 Flag not found (misc 80)</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/simonvik rel=author>simonvik</a> with ♥
+<span class=post-time>on <time datetime=2016-02-21 itemprop=datePublished>February 21, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: I tried to download the flag, but somehow received only 404 errors
+:( Hint: The last step is to look for flag pattern.</p></blockquote><p>(misc80, solved by 292)</p><p>Attachment: misc80.zip</p><h1 id=solution>Solution</h1><p>We are provided with a pcapng file, after opening the file in wireshark we can
+see that it contains some HTTP Requests (without answers) and some DNS lookups.</p><p>After looking at it for a while we noticed that the hostnames looked
+interesting, the first part of the hostname looked like hex-encoded ascii.</p><p>I wrote a small python-script that decodes the pcap and the DNS queries:</p><p>(I could not get python to read the pcapng so i converted it to pcap using <a href=http://pcapng.com/>pcapng</a>)</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-PYTHON data-lang=PYTHON><span style=color:#75715e>#!/usr/bin/env python</span>
+
+<span style=color:#f92672>import</span> base64
+<span style=color:#f92672>import</span> re
+
+<span style=color:#f92672>from</span> scapy.all <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+<span style=color:#f92672>from</span> scapy.layers.dns <span style=color:#f92672>import</span> DNSRR, DNS, DNSQR
+
+pcap <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;./flag.s0i0.pcap&#39;</span>
+pkts <span style=color:#f92672>=</span> rdpcap(pcap)
+
+lst <span style=color:#f92672>=</span> []
+
+<span style=color:#66d9ef>for</span> p <span style=color:#f92672>in</span> pkts:
+
+    <span style=color:#66d9ef>if</span> p<span style=color:#f92672>.</span>haslayer(DNS):
+
+	<span style=color:#66d9ef>if</span> p<span style=color:#f92672>.</span>qdcount <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>and</span> isinstance(p<span style=color:#f92672>.</span>qd, DNSQR):
+            q <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>qd<span style=color:#f92672>.</span>qname
+	    m <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(<span style=color:#e6db74>&#39;([^.]+)&#39;</span>, q);
+	    h <span style=color:#f92672>=</span> m<span style=color:#f92672>.</span>group(<span style=color:#ae81ff>1</span>)
+	    s <span style=color:#f92672>=</span>  <span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join([chr(int(<span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join(c), <span style=color:#ae81ff>16</span>)) <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> zip(h[<span style=color:#ae81ff>0</span>::<span style=color:#ae81ff>2</span>],h[<span style=color:#ae81ff>1</span>::<span style=color:#ae81ff>2</span>])])
+	    <span style=color:#66d9ef>if</span> s <span style=color:#f92672>not</span> <span style=color:#f92672>in</span> lst:
+                lst<span style=color:#f92672>.</span>append(s)
+
+
+<span style=color:#66d9ef>print</span> lst
+</code></pre></div><p>The script generated the following output:</p><pre><code>[&quot;In the end, it's all about fla&quot;, 'gs.\nWhether you win or lose do', &quot;esn't matter.\n{Ofc, winning is&quot;, ' cooler\nDid you find other fla', 'gs?\nNoboby finds other flags!\n', 'Superman is my hero.\n_HERO!!!_', &quot;\nHelp me my friend, I'm lost i&quot;, 'n my own mind.\nAlways, always,', ' for ever alone.\nCrying until ', &quot;I'm dying.\nKings never die.\nSo&quot;, ' do I.\n}!\n']
+
+Pretty printed:
+
+In the end, it's all about flags.
+Whether you win or lose doesn't matter.
+{Ofc, winning is cooler
+Did you find other flags?
+Noboby finds other flags!
+Superman is my hero.
+_HERO!!!_
+Help me my friend, I'm lost in my own mind.
+Always, always, for ever alone.
+Crying until I'm dying.
+Kings never die.
+So do I.
+}!
+
+</code></pre><p>We know the flag format and could see that the first letter after \n matches the format</p><p>We now have the flag : <strong>IW{DNS_HACKS}</strong></p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-misc-80-simonvik/>https://blog.xil.se/posts/internetwache-2016-misc-80-simonvik/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/internetwache-2016-web-50-simonvik/ class=prev rel=prev title="InternetWache 2016 Mess of Hash (Web 50)"><i class="iconfont icon-left"></i>&nbsp;InternetWache 2016 Mess of Hash (Web 50)</a>
+<a href=https://blog.xil.se/posts/bkp-2016-jit-re-kbeckmann/ class=next rel=next title="Boston Key Party 2016 Jit in my pants (RE 3) Writeup">Boston Key Party 2016 Jit in my pants (RE 3) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

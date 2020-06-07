@@ -1,0 +1,55 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/><link rel=next href=https://blog.xil.se/posts/internetwache-2016-crypto90-kbeckmann/><link rel=canonical href=https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>InternetWache 2016 A numbers game II (Crypto 70) Writeup | Blog</title><meta name=title content="InternetWache 2016 A numbers game II (Crypto 70) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"InternetWache 2016 A numbers game II (Crypto 70) Writeup","headline":"InternetWache 2016 A numbers game II (Crypto 70) Writeup","description":"Problem  Description: There was this student hash design contest. All submissions were crap, but had promised to use the winning algorithm for our important school safe. We hashed our password and got \u0026lsquo;00006800007d\u0026rsquo;. Brute force isn\u0026rsquo;t effective anymore and the hash algorithm had to be collision-resistant, so we\u0026rsquo;re good to go, aren\u0026rsquo;t we?\n (crypto70, solved by 86)\nAttachment: crypto70.zip\nService: 188.166.133.53:10009\nSolution Connecting to the service we are faced with a bruteforce blocker \/ challenge.","inLanguage":"en-us","author":"kbeckmann","creator":"kbeckmann","publisher":"kbeckmann","accountablePerson":"kbeckmann","copyrightHolder":"kbeckmann","copyrightYear":"2016","datePublished":"2016-02-20 23:29:14 \u002b0100 \u002b0100","dateModified":"2016-02-20 23:29:14 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/internetwache-2016-crypto70-kbeckmann\/","wordCount":"362","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">InternetWache 2016 A numbers game II (Crypto 70) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/kbeckmann rel=author>kbeckmann</a> with ♥
+<span class=post-time>on <time datetime=2016-02-20 itemprop=datePublished>February 20, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: There was this student hash design contest. All submissions were crap, but had promised to use the winning algorithm for our important school safe. We hashed our password and got &lsquo;00006800007d&rsquo;. Brute force isn&rsquo;t effective anymore and the hash algorithm had to be collision-resistant, so we&rsquo;re good to go, aren&rsquo;t we?</p></blockquote><p>(crypto70, solved by 86)</p><p>Attachment: crypto70.zip</p><p>Service: 188.166.133.53:10009</p><h1 id=solution>Solution</h1><p>Connecting to the service we are faced with a bruteforce blocker / challenge.</p><pre><code>$ nc 188.166.133.53 10009
+You need to provide your proof of work: A sha1 hash with the last two bytes set to 0. It has 36626829 as the prefix. It should match ^[0-9a-z]{15}$
+Enter work:
+</code></pre><p>We wrote a hacky php script to solve this.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=color:#75715e>&lt;?php</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>randomPassword</span>() {
+    $alphabet <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;0123456789abcdefghijklmnopqrstuvwxyz&#39;</span>;
+    $pass <span style=color:#f92672>=</span> <span style=color:#66d9ef>array</span>();
+    $alphaLength <span style=color:#f92672>=</span> <span style=color:#a6e22e>strlen</span>($alphabet) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>;
+    <span style=color:#66d9ef>for</span> ($i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; $i <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>7</span>; $i<span style=color:#f92672>++</span>) {
+        $n <span style=color:#f92672>=</span> <span style=color:#a6e22e>rand</span>(<span style=color:#ae81ff>0</span>, $alphaLength);
+        $pass[] <span style=color:#f92672>=</span> $alphabet[$n];
+    }
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>implode</span>($pass);
+}
+
+<span style=color:#66d9ef>while</span>(<span style=color:#66d9ef>true</span>){
+	$pass <span style=color:#f92672>=</span> <span style=color:#a6e22e>randomPassword</span>();
+	$pass <span style=color:#f92672>=</span> $argv[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>.</span> $pass;
+
+	$hash <span style=color:#f92672>=</span> <span style=color:#a6e22e>sha1</span>($pass);
+	<span style=color:#66d9ef>if</span>(<span style=color:#a6e22e>preg_match</span>(<span style=color:#e6db74>&#39;/0000$/&#39;</span>, $hash)){
+		<span style=color:#66d9ef>echo</span> $pass, <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>;
+	}
+}
+</code></pre></div><p>Looking at the challege zip file we find a python script that computes a &ldquo;hash&rdquo; of some sort. Our task is to find a plaintext that generates the hash <code>00006800007d</code>.</p><p>I decided to bruteforce it. After successfully finding a plaintext that generated the correct hash, the server responded that it was too short. It had to be at least 18 characters long. So i changed the script.</p><p>I added the following lines to the provided script.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> itertools
+
+<span style=color:#f92672>...</span>
+
+c <span style=color:#f92672>=</span> [chr(x) <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> range(ord(<span style=color:#e6db74>&#39;A&#39;</span>), ord(<span style=color:#e6db74>&#39;z&#39;</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>)]
+combos <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join(c) <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> itertools<span style=color:#f92672>.</span>combinations(c, <span style=color:#ae81ff>4</span>)]
+<span style=color:#66d9ef>for</span> a <span style=color:#f92672>in</span> combos:
+	x <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;A&#34;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>18</span> <span style=color:#f92672>+</span> a
+	hash <span style=color:#f92672>=</span> myhash(x)
+	<span style=color:#66d9ef>if</span> hash <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;00006800007d&#39;</span>:
+		<span style=color:#66d9ef>print</span> x
+		<span style=color:#66d9ef>break</span>
+</code></pre></div><p>The output will be <code>AAAAAAAAAAAAAAAAAAMdnx</code> after a couple of minutes depending on your hardware.</p><p>Entering the generated output gives us the flag:</p><pre><code>$ nc 188.166.133.53 10009
+You need to provide your proof of work: A sha1 hash with the last two bytes set to 0. It has 30888409 as the prefix. It should match ^[0-9a-z]{15}$
+Enter work:308884090euymhc
+Thank you. Please continue with the login process...
+Password: AAAAAAAAAAAAAAAAAAMdnx
+Logged in!
+IW{FUCK_YOU_HASH_MY_ASS}
+</code></pre><p>Flag is <strong>IW{FUCK_YOU_HASH_MY_ASS}</strong>.</p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/>https://blog.xil.se/posts/internetwache-2016-crypto70-kbeckmann/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/internetwache-2016-crypto60-kbeckmann/ class=prev rel=prev title="InternetWache 2016 Oh Bob! (Crypto 60) Writeup"><i class="iconfont icon-left"></i>&nbsp;InternetWache 2016 Oh Bob! (Crypto 60) Writeup</a>
+<a href=https://blog.xil.se/posts/internetwache-2016-crypto90-kbeckmann/ class=next rel=next title="InternetWache 2016 Bank (Crypto 90) Writeup">InternetWache 2016 Bank (Crypto 90) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><script src=https://blog.xil.se/js/vendor_no_gallery.min.js async></script></div></body></html>

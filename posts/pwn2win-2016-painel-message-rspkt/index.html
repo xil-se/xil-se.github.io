@@ -1,0 +1,54 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="chrome=1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><meta name=author content="xil.se"><link rel=prev href=https://blog.xil.se/posts/pwn2win-2016-simple-crypto-rspkt/><link rel=next href=https://blog.xil.se/posts/pwn2win-2016-dump-rspkt/><link rel=canonical href=https://blog.xil.se/posts/pwn2win-2016-painel-message-rspkt/><link rel=apple-touch-icon sizes=180x180 href=https://blog.xil.se/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://blog.xil.se/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://blog.xil.se/favicon-16x16.png><link rel=manifest href=https://blog.xil.se/site.webmanifest><link rel=mask-icon href=https://blog.xil.se/safari-pinned-tab.svg color=#5bbad5><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#ffffff"><title>Pwn2Win CTF 2016 Painel Message (Forensics 50) Writeup | Blog</title><meta name=title content="Pwn2Win CTF 2016 Painel Message (Forensics 50) Writeup | Blog"><link rel=stylesheet href=https://blog.xil.se/font/iconfont.css><link rel=stylesheet href=https://blog.xil.se/css/main.min.css><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.xil.se\/"},"articleSection":"posts","name":"Pwn2Win CTF 2016 Painel Message (Forensics 50) Writeup","headline":"Pwn2Win CTF 2016 Painel Message (Forensics 50) Writeup","description":"Problem  Description: The last month we gained access to a video portraying a Club\u0026rsquo;s electronics project. It looks like they want to insert this display into the the digital panels found in urban buses that circulate in large cities. We need to discover what this is all about.\n Those who automate the ENTIRE resolution of this challenge deserve 20 bonus points. Show your code to a judge (@). ;)","inLanguage":"en-us","author":"rspkt","creator":"rspkt","publisher":"rspkt","accountablePerson":"rspkt","copyrightHolder":"rspkt","copyrightYear":"2016","datePublished":"2016-03-28 01:14:00 \u002b0100 \u002b0100","dateModified":"2016-03-28 01:14:00 \u002b0100 \u002b0100","url":"https:\/\/blog.xil.se\/posts\/pwn2win-2016-painel-message-rspkt\/","wordCount":"254","keywords":["Blog"]}</script></head><body><div class=wrapper><nav class=navbar><div class=container><div class="navbar-header header-logo"><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class="menu navbar-right"><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><nav class=navbar-mobile id=nav-mobile style=display:none><div class=container><div class=navbar-header><div><a href=javascript:void(0); class=theme-switch><i class="iconfont icon-xihuan"></i></a>&nbsp;<a href=https://blog.xil.se/>Blog</a></div><div class=menu-toggle><span></span><span></span><span></span></div></div><div class=menu id=mobile-menu><a class=menu-item href=https://blog.xil.se/posts/>Blog</a>
+<a class=menu-item href=https://blog.xil.se/categories/>Categories</a></div></div></nav><main class=main><div class=container><article class=post-warp itemscope itemtype=http://schema.org/Article><header class=post-header><h1 class=post-title itemprop="name headline">Pwn2Win CTF 2016 Painel Message (Forensics 50) Writeup</h1><div class=post-meta>Written by <a itemprop=name href=https://blog.xil.se/author/rspkt rel=author>rspkt</a> with ♥
+<span class=post-time>on <time datetime=2016-03-28 itemprop=datePublished>March 28, 2016</time></span>
+in
+<i class="iconfont icon-folder"></i><span class=post-category><a href=https://blog.xil.se/categories/writeups/>writeups</a></span></div></header><div class=post-content><h1 id=problem>Problem</h1><blockquote><p>Description: The last month we gained access to a video portraying a Club&rsquo;s
+electronics project. It looks like they want to insert this display into the
+the digital panels found in urban buses that circulate in large cities. We
+need to discover what this is all about.</p></blockquote><p>Those who automate the ENTIRE resolution of this challenge deserve 20 bonus
+points. Show your code to a judge (@). ;)</p><h1 id=solution>Solution</h1><p>We were given a video of a two-row LED display with the leds being turned on
+and off in 29 different configurations. We started off by transcribing these
+into a binary form, ending up with the following:</p><pre><code>011111110100011 1100100011111110
+010000010101110 0010001010000010
+010111010100101 0100101010111010
+010111010010011 1111011010111010
+010111010011001 0011111010111010
+010000010110111 1001000010000010
+011111110101010 1010101011111110
+000000000100111 1101111000000000
+000111010100100 0000011111001110
+001000001010001 0100111111100000
+001011010100100 0010001101100000
+000101001010111 1100100110110010
+001011010000001 1011100001101100
+000011101101110 0110011011110110
+010010010011000 0011001010000100
+010100101111000 0111101110110110
+011111010011110 0001100000000100
+010110100000111 1001010111100100
+010111110100100 0011101111111000
+010001001101000 0111100011010010
+010010011000110 1001101111101000
+000000000111101 0111101000110010
+011111110010010 0011011010101000
+010000010000011 1111111000100010
+010111010110011 0100101111101010
+010111010101001 1010110000111000
+010111010110011 1110011101111100
+010000010001101 0000101001110100
+011111110011000 0100110101001000
+</code></pre><p>A lot of time was spend trying to perform various XOR approaches in order to
+find some ASCII values in the mess of binary digits. The fact that the upper
+row was only 15 bits made the whole thing seem a bit off. It wasn&rsquo;t until
+Konrad (who had spent the last couple of hours solving the QRGrams challenge)
+noticed the two QR-like squares in the upper corners that things got clear.
+Translating the binary digits to an image revealed the QR-code, which gave us
+the flag, <strong>CTF-BR{Mentor comanda!}</strong>.</p><p><a href=https://blog.xil.se/imgs/pwn2win-2016-painel-message-2.png><img src=https://blog.xil.se/imgs/pwn2win-2016-painel-message-2.png alt="Challenge video"></a>
+<a href=https://blog.xil.se/imgs/pwn2win-2016-painel-message-1.png><img src=https://blog.xil.se/imgs/pwn2win-2016-painel-message-1.png alt="QR code"></a></p></div><div class=post-copyright><p class=copyright-item><span>Author:</span>
+<span>xil.se</span></p><p class=copyright-item><span>Link:</span>
+<a href=https://blog.xil.se/posts/pwn2win-2016-painel-message-rspkt/>https://blog.xil.se/posts/pwn2win-2016-painel-message-rspkt/</span></p></div><div class=post-tags><section><a href=javascript:window.history.back();>back</a></span> ·
+<span><a href=https://blog.xil.se/>home</a></span></section></div><div class=post-nav><a href=https://blog.xil.se/posts/pwn2win-2016-simple-crypto-rspkt/ class=prev rel=prev title="Pwn2Win CTF 2016 Simple Cryptography (Crypto 60) Writeup"><i class="iconfont icon-left"></i>&nbsp;Pwn2Win CTF 2016 Simple Cryptography (Crypto 60) Writeup</a>
+<a href=https://blog.xil.se/posts/pwn2win-2016-dump-rspkt/ class=next rel=next title="Pwn2Win CTF 2016 Dump (Forensics 50) Writeup">Pwn2Win CTF 2016 Dump (Forensics 50) Writeup&nbsp;<i class="iconfont icon-right"></i></a></div><div class=post-comment></div></article></div></main><footer class=footer><div class=copyright>&copy;
+<span class=with-love><i class="iconfont icon-love"></i></span><span class=author itemprop=copyrightHolder><a href=https://blog.xil.se/>xil.se</a> |</span>
+<span>Powered by <a href=https://gohugo.io/ target=_blank rel="external nofollow">Hugo</a> & <a href=https://github.com/liuzc/leaveit target=_blank rel="external nofollow">LeaveIt</a></span></div></footer><link href=//lib.baomitu.com/lightgallery/1.6.11/css/lightgallery.min.css rel=stylesheet><script src=https://blog.xil.se/js/vendor_gallery.min.js async></script></div></body></html>
